@@ -7,7 +7,12 @@ defmodule PetreeApiWeb.Router do
 
   scope "/api", PetreeApiWeb do
     pipe_through :api
+    get "/trees", TreeController, :index
+    get "/trees/:id", TreeController, :show
+    get "/users", UserController, :index
+    get "/users/:id", UserController, :show
   end
+
 
   # Enables LiveDashboard only for development
   #
