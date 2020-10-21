@@ -6,9 +6,9 @@ defmodule PetreeApi.SchemaTest do
   describe "tree" do
     alias PetreeApi.Schema.Tree
 
-    @valid_attrs %{description: "some description", fruitful: true, inserted_at: ~N[2010-04-17 14:00:00], lat: 120.5, lng: 120.5, species_id: 42, updated_at: ~N[2010-04-17 14:00:00], user_id: 42, status: "pending"}
-    @update_attrs %{description: "some updated description", fruitful: false, inserted_at: ~N[2011-05-18 15:01:01], lat: 456.7, lng: 456.7, species_id: 43, updated_at: ~N[2011-05-18 15:01:01], user_id: 43}
-    @invalid_attrs %{description: nil, fruitful: nil, inserted_at: nil, lat: nil, lng: nil, species_id: nil, updated_at: nil, user_id: nil}
+    @valid_attrs %{description: "some description", fruitful: true, lat: 120.5, lng: 120.5, species_id: 42, user_id: 42, status: :pending}
+    @update_attrs %{description: "some updated description", fruitful: false, lat: 456.7, lng: 456.7, species_id: 43, user_id: 43, status: :accepted}
+    @invalid_attrs %{description: nil, fruitful: nil, lat: nil, lng: nil, species_id: nil, user_id: nil, status: nil}
 
     def tree_fixture(attrs \\ %{}) do
       {:ok, tree} =
@@ -33,12 +33,11 @@ defmodule PetreeApi.SchemaTest do
       assert {:ok, %Tree{} = tree} = Schema.create_tree(@valid_attrs)
       assert tree.description == "some description"
       assert tree.fruitful == true
-      assert tree.inserted_at == ~N[2010-04-17 14:00:00]
       assert tree.lat == 120.5
       assert tree.lng == 120.5
       assert tree.species_id == 42
-      assert tree.updated_at == ~N[2010-04-17 14:00:00]
       assert tree.user_id == 42
+      assert tree.status == :pending
     end
 
     test "create_tree/1 with invalid data returns error changeset" do
@@ -50,12 +49,11 @@ defmodule PetreeApi.SchemaTest do
       assert {:ok, %Tree{} = tree} = Schema.update_tree(tree, @update_attrs)
       assert tree.description == "some updated description"
       assert tree.fruitful == false
-      assert tree.inserted_at == ~N[2011-05-18 15:01:01]
       assert tree.lat == 456.7
       assert tree.lng == 456.7
       assert tree.species_id == 43
-      assert tree.updated_at == ~N[2011-05-18 15:01:01]
       assert tree.user_id == 43
+      assert tree.status == :accepted
     end
 
     test "update_tree/2 with invalid data returns error changeset" do

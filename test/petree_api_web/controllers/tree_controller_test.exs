@@ -7,26 +7,22 @@ defmodule PetreeApiWeb.TreeControllerTest do
   @create_attrs %{
     description: "some description",
     fruitful: true,
-    inserted_at: ~N[2010-04-17 14:00:00],
     lat: 120.5,
     lng: 120.5,
     species_id: 42,
-    updated_at: ~N[2010-04-17 14:00:00],
     user_id: 42,
-    status: "pending"
+    status: :pending
   }
   @update_attrs %{
     description: "some updated description",
     fruitful: false,
-    inserted_at: ~N[2011-05-18 15:01:01],
     lat: 456.7,
     lng: 456.7,
     species_id: 43,
-    updated_at: ~N[2011-05-18 15:01:01],
     user_id: 43,
-    status: "approved"
+    status: :accepted
   }
-  @invalid_attrs %{description: nil, fruitful: nil, inserted_at: nil, lat: nil, lng: nil, species_id: nil, updated_at: nil, user_id: nil}
+  @invalid_attrs %{description: nil, fruitful: nil, lat: nil, lng: nil, species_id: nil, user_id: nil, status: nil}
 
   def fixture(:tree) do
     {:ok, tree} = Schema.create_tree(@create_attrs)
@@ -55,12 +51,11 @@ defmodule PetreeApiWeb.TreeControllerTest do
                "id" => id,
                "description" => "some description",
                "fruitful" => true,
-               "inserted_at" => "2010-04-17T14:00:00",
                "lat" => 120.5,
                "lng" => 120.5,
                "species_id" => 42,
-               "updated_at" => "2010-04-17T14:00:00",
-               "user_id" => 42
+               "user_id" => 42,
+               "status" => "pending"
              } = json_response(conn, 200)["data"]
     end
 
@@ -83,12 +78,11 @@ defmodule PetreeApiWeb.TreeControllerTest do
                "id" => id,
                "description" => "some updated description",
                "fruitful" => false,
-               "inserted_at" => "2011-05-18T15:01:01",
                "lat" => 456.7,
                "lng" => 456.7,
                "species_id" => 43,
-               "updated_at" => "2011-05-18T15:01:01",
-               "user_id" => 43
+               "user_id" => 43,
+               "status" => "accepted"
              } = json_response(conn, 200)["data"]
     end
 

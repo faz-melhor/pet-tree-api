@@ -14,10 +14,10 @@ defmodule PetreeApiWeb.TreeView do
     %{id: tree.id,
       user_id: tree.user_id,
       species_id: tree.species_id,
-      name: tree.name,
       description: tree.description,
       lat: tree.lat,
       lng: tree.lng,
+      status: tree.status,
       fruitful: tree.fruitful}
   end
 end

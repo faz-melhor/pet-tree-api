@@ -7,7 +7,7 @@ use Mix.Config
 # Run `mix help test` for more information.
 config :petree_api, PetreeApi.Repo,
   username: "postgres",
-  password: "postgres",
+  password: "mysecretpassword",
   database: "petree_api_test#{System.get_env("MIX_TEST_PARTITION")}",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox

@@ -1,6 +1,6 @@
 defmodule PetreeApiWeb.UserView do
   use PetreeApiWeb, :view
-  alias PeuserApiWeb.UserView
+  alias PetreeApiWeb.UserView
 
   def render("index.json", %{user: user}) do
     %{data: render_many(user, UserView, "user.json")}
