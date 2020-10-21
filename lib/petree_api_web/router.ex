@@ -8,9 +8,15 @@ defmodule PetreeApiWeb.Router do
   scope "/api", PetreeApiWeb do
     pipe_through :api
     get "/trees", TreeController, :index
+    post "/trees", TreeController, :create
     get "/trees/:id", TreeController, :show
+    delete "/trees/:id", TreeController, :delete
+    put "/trees/:id", TreeController, :update
     get "/users", UserController, :index
+    post "/users", UserController, :create
     get "/users/:id", UserController, :show
+    delete "/users/:id", UserController, :delete
+    put "/users/:id", UserController, :update
   end
 
 

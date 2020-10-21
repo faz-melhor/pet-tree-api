@@ -12,7 +12,8 @@ defmodule PetreeApiWeb.TreeControllerTest do
     lng: 120.5,
     species_id: 42,
     updated_at: ~N[2010-04-17 14:00:00],
-    user_id: 42
+    user_id: 42,
+    status: "pending"
   }
   @update_attrs %{
     description: "some updated description",
@@ -22,7 +23,8 @@ defmodule PetreeApiWeb.TreeControllerTest do
     lng: 456.7,
     species_id: 43,
     updated_at: ~N[2011-05-18 15:01:01],
-    user_id: 43
+    user_id: 43,
+    status: "approved"
   }
   @invalid_attrs %{description: nil, fruitful: nil, inserted_at: nil, lat: nil, lng: nil, species_id: nil, updated_at: nil, user_id: nil}
 
