@@ -1,12 +1,10 @@
 use Mix.Config
 
+database_url = System.get_env("DATABASE_URL")
+
 # Configure your database
 config :petree_api, PetreeApi.Repo,
-  username: "postgres",
-  password: "mysecretpassword",
-  database: "petree_api_dev",
-  hostname: "localhost",
-  port: 5432,
+  url: database_url,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
