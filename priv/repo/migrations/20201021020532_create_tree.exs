@@ -13,6 +13,5 @@ defmodule PetreeApi.Repo.Migrations.CreateTree do
 
       timestamps()
     end
-
   end
 end
