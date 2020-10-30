@@ -4,7 +4,7 @@ database_url = System.get_env("DATABASE_URL")
 
 # Configure your database
 config :petree_api, PetreeApi.Repo,
-  url: database_url,
+  url: String.replace(database_url, "?", "dev"),
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
