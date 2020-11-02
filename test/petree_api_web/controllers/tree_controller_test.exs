@@ -22,7 +22,15 @@ defmodule PetreeApiWeb.TreeControllerTest do
     user_id: 43,
     status: :accepted
   }
-  @invalid_attrs %{description: nil, fruitful: nil, lat: nil, lng: nil, species_id: nil, user_id: nil, status: nil}
+  @invalid_attrs %{
+    description: nil,
+    fruitful: nil,
+    lat: nil,
+    lng: nil,
+    species_id: nil,
+    user_id: nil,
+    status: nil
+  }
 
   def fixture(:tree) do
     {:ok, tree} = Schema.create_tree(@create_attrs)

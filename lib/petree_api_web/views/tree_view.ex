@@ -11,13 +11,15 @@ defmodule PetreeApiWeb.TreeView do
   end
 
   def render("tree.json", %{tree: tree}) do
-    %{id: tree.id,
+    %{
+      id: tree.id,
       user_id: tree.user_id,
       species_id: tree.species_id,
       description: tree.description,
       lat: tree.lat,
       lng: tree.lng,
       status: tree.status,
-      fruitful: tree.fruitful}
+      fruitful: tree.fruitful
+    }
   end
 end

@@ -19,7 +19,6 @@ defmodule PetreeApiWeb.Router do
     put "/users/:id", UserController, :update
   end
 
-
   # Enables LiveDashboard only for development
   #
   # If you want to use the LiveDashboard in production, you should put
