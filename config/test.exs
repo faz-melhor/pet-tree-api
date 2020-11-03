@@ -1,6 +1,9 @@
 use Mix.Config
 
-database_url = System.get_env("DATABASE_URL")
+username = System.get_env("DB_USER")
+password = System.get_env("DB_PASSWORD")
+database = System.get_env("DB_NAME")
+hostname = System.get_env("DB_HOST")
 
 # Configure your database
 #
@@ -8,7 +11,11 @@ database_url = System.get_env("DATABASE_URL")
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :petree_api, PetreeApi.Repo,
-  url: String.replace(database_url, "?", "test"),
+  username: username,
+  password: password,
+  database: String.replace(database, "?", "test"),
+  hostname: hostname,
+  port: 5432,
   pool: Ecto.Adapters.SQL.Sandbox
 
 # We don't run a server during test. If one is required,

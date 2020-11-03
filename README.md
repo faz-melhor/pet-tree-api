@@ -1,19 +1,20 @@
 # PetreeApi
 
-To start your Phoenix server:
+To start your Phoenix server local:
 
   * Install PostgreSQL in your local machine
-  * Export DATABASE_URL with your DB config info(_? in the end, where "?" is the environment dev or test), eg. ``export DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DATABASE_?``
+  * Export required environment variables:
+    - `export MIX_ENV=dev; export DB_HOST=localhost; export DB_NAME=petree_api_?; export DB_USER=USERNAME; export DB_PASSWORD=PASSWORD`
+    - The `?` in the database name will be replaced with the value defined in `MIX_ENV`
   * Install dependencies with `mix deps.get`
   * Create and migrate your database with `mix ecto.setup`
   * Start Phoenix endpoint with `mix phx.server`
 
-To run with Docker:
+To start your Phoenix server using Docker:
 
-  * Create a .env file and set the DATABASE_URL with your config info eg. ``DATABASE_URL=postgres://postgres:postgres@db:5432/petree_api_?``
+  * Copy .env-sample and rename it to .env, open it and fill all the information required in the variables defined
   * Build images with `docker-compose build`
-  * Create and migrate your database with `docker-compose run phoenix mix ecto.setup`
-  * Start application with `docker-compose up`
+  * Start application with `docker-compose up`, the database will be created and migrated automatically
   * To run tests `docker-compose run -e MIX_ENV=test phoenix mix test`
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.

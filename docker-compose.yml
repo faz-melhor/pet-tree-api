@@ -5,8 +5,6 @@ services:
     build: .
     depends_on:
       - db
-    environment:
-      MIX_ENV: dev
     env_file:
       - .env
     ports:
@@ -15,9 +13,11 @@ services:
       - .:/app
   db:
     image: 'postgres:11-alpine'
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
       POSTGRES_HOST_AUTH_METHOD: trust
     restart: always

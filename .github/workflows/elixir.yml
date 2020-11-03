@@ -6,6 +6,12 @@ jobs:
   build:
     name: Build and test
     runs-on: ubuntu-latest
+    env:
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: localhost
+      DB_NAME: petree_api_?
+      MIX_ENV: test
 
     services:
       postgres:
@@ -13,7 +19,8 @@ jobs:
         ports:
           - 5432:5432
         env:
-          POSTGRES_PASSWORD: mysecretpassword
+          POSTGRES_USER: $DB_USER
+          POSTGRES_PASSWORD: $DB_PASSWORD
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
