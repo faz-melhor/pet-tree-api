@@ -1,23 +1,25 @@
 defmodule PetreeApiWeb.UserControllerTest do
   use PetreeApiWeb.ConnCase
 
-  alias PetreeApi.UserSchema
-  alias PetreeApi.UserSchema.User
+  alias PetreeApi.Accounts
+  alias PetreeApi.Accounts.User
 
   @create_attrs %{
     email: "some email",
     name: "some name",
-    password: "some password"
+    nickname: "some nickname",
+    password_hash: "some password_hash"
   }
   @update_attrs %{
     email: "some updated email",
     name: "some updated name",
-    password: "some updated password"
+    nickname: "some updated nickname",
+    password_hash: "some updated password_hash"
   }
-  @invalid_attrs %{email: nil, name: nil, password: nil}
+  @invalid_attrs %{email: nil, name: nil, nickname: nil, password_hash: nil}
 
   def fixture(:user) do
-    {:ok, user} = UserSchema.create_user(@create_attrs)
+    {:ok, user} = Accounts.create_user(@create_attrs)
     user
   end
 
@@ -26,7 +28,7 @@ defmodule PetreeApiWeb.UserControllerTest do
   end
 
   describe "index" do
-    test "lists all user", %{conn: conn} do
+    test "lists all users", %{conn: conn} do
       conn = get(conn, Routes.user_path(conn, :index))
       assert json_response(conn, 200)["data"] == []
     end
@@ -43,7 +45,8 @@ defmodule PetreeApiWeb.UserControllerTest do
                "id" => id,
                "email" => "some email",
                "name" => "some name",
-               "password" => "some password"
+               "nickname" => "some nickname",
+               "password_hash" => "some password_hash"
              } = json_response(conn, 200)["data"]
     end
 
@@ -66,7 +69,8 @@ defmodule PetreeApiWeb.UserControllerTest do
                "id" => id,
                "email" => "some updated email",
                "name" => "some updated name",
-               "password" => "some updated password"
+               "nickname" => "some updated nickname",
+               "password_hash" => "some updated password_hash"
              } = json_response(conn, 200)["data"]
     end
 

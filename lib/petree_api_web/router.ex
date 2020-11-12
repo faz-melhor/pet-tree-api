@@ -12,11 +12,13 @@ defmodule PetreeApiWeb.Router do
     get "/trees/:id", TreeController, :show
     delete "/trees/:id", TreeController, :delete
     put "/trees/:id", TreeController, :update
-    get "/users", UserController, :index
-    post "/users", UserController, :create
-    get "/users/:id", UserController, :show
-    delete "/users/:id", UserController, :delete
-    put "/users/:id", UserController, :update
+
+    resources "/users", UserController
+    # get "/users", UserController, :index
+    # post "/users", UserController, :create
+    # get "/users/:id", UserController, :show
+    # delete "/users/:id", UserController, :delete
+    # put "/users/:id", UserController, :update
   end
 
   # Enables LiveDashboard only for development
