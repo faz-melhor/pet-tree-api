@@ -2,8 +2,8 @@ defmodule PetreeApiWeb.UserView do
   use PetreeApiWeb, :view
   alias PetreeApiWeb.UserView
 
-  def render("index.json", %{user: user}) do
-    %{data: render_many(user, UserView, "user.json")}
+  def render("index.json", %{users: users}) do
+    %{data: render_many(users, UserView, "user.json")}
   end
 
   def render("show.json", %{user: user}) do
@@ -11,6 +11,10 @@ defmodule PetreeApiWeb.UserView do
   end
 
   def render("user.json", %{user: user}) do
-    %{id: user.id, name: user.name, email: user.email, password: user.password}
+    %{id: user.id,
+      name: user.name,
+      nickname: user.nickname,
+      email: user.email,
+      password_hash: user.password_hash}
   end
 end
