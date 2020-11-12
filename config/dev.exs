@@ -1,11 +1,16 @@
 use Mix.Config
 
+username = System.get_env("DB_USER")
+password = System.get_env("DB_PASSWORD")
+database = System.get_env("DB_NAME")
+hostname = System.get_env("DB_HOST")
+
 # Configure your database
 config :petree_api, PetreeApi.Repo,
-  username: "postgres",
-  password: "mysecretpassword",
-  database: "petree_api_dev",
-  hostname: "localhost",
+  username: username,
+  password: password,
+  database: String.replace(database, "?", "dev"),
+  hostname: hostname,
   port: 5432,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
