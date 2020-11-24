@@ -1,0 +1,799 @@
+openapi: 3.0.0
+info:
+  title: PetTree API
+  version: 1.0.0
+  contact:
+    name: Eduardo Menezes Rocha
+    email: eduardomenezesr@gmail.com
+  description: API documentation to help developers to integrate their software with our backend functionalities.
+servers:
+  - url: 'https://faz-melhor.stoplight.io/mocks/faz-melhor/pet-tree/2454148'
+    description: Mock
+paths:
+  '/users/{userId}':
+    parameters:
+      - schema:
+          type: string
+        name: userId
+        in: path
+        required: true
+    get:
+      summary: Gets User details
+      tags:
+        - Users
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUser'
+              examples:
+                Get user Alanna:
+                  value:
+                    id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+                    name: Alanna Vanzella
+                    nickname: Alanna
+                    email: alanna@example.com
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              examples:
+                DB connection error:
+                  value:
+                    message: Could not establish connection with database.
+      operationId: get-users-userId
+      security:
+        - APIKey: []
+      description: Gets details of a specific user.
+  '/trees/{treeId}':
+    parameters:
+      - schema:
+          type: string
+        name: treeId
+        in: path
+        required: true
+    get:
+      summary: Gets Tree's details
+      tags:
+        - Trees
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTree'
+              examples:
+                Pé de Limão da Alanna:
+                  value:
+                    id: cd9ef5a6-377e-479f-8efe-f55a5667d7a1
+                    description: Pé de Limão da Alanna
+                    specie: Limão Taiti
+                    fruitful: true
+                    status: accepted
+                    lat: -34.574956
+                    lng: 58.408454
+                    owner: true
+                    owner_nickname: Alanna
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              examples:
+                DB connection error:
+                  value:
+                    message: Could not establish connection with database.
+      operationId: get-trees-treeId
+      description: Gets details of a specific tree.
+      parameters: []
+      security:
+        - APIKey: []
+    patch:
+      summary: Updates Tree's details
+      operationId: patch-trees-treeId
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '422':
+          description: Unprocessable Entity
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              examples:
+                DB connection error:
+                  value:
+                    message: Could not establish connection with database.
+      description: Updates details of a specific tree.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  description: Tree's description
+                specie:
+                  type: string
+                  description: Tree's specie
+                fruitful:
+                  type: boolean
+                  description: The specie is fruitful?
+                status:
+                  type: string
+                  enum:
+                    - accepted
+                    - pending
+                    - rejected
+                  description: 'Tree''s status, can only be updated by an admin'
+            examples:
+              Aprove tree:
+                value:
+                  status: accepted
+        description: A JSON object containing the the fields and the information to be updated.
+      parameters: []
+      tags:
+        - Trees
+      security:
+        - APIKey: []
+  /trees:
+    get:
+      summary: Gets all trees registered
+      tags:
+        - Trees
+      operationId: get-trees
+      parameters:
+        - schema:
+            type: number
+            format: float
+          in: query
+          name: lat
+          description: Latitude
+        - schema:
+            type: number
+            format: float
+          in: query
+          name: lng
+          description: Longitude
+        - schema:
+            type: number
+            example: 0.5
+            format: float
+            minimum: 0.5
+          in: query
+          name: radius
+          description: 'Max distance from the point(lat, lng)'
+        - schema:
+            type: string
+            enum:
+              - accepted
+              - pending
+              - rejected
+            example: accepted
+          in: query
+          name: status
+          description: Tree's status
+        - schema:
+            type: integer
+            format: int32
+            example: 50
+            minimum: 1
+          in: query
+          name: offset
+          description: Pagination offset
+        - schema:
+            type: integer
+            format: int32
+            example: 30
+            minimum: 1
+          in: query
+          name: limit
+          description: Pagination limit
+      description: 'Gets all trees registered, filters and pagination parameters can be used. Latitude, longitude and radius should be used together, as offset and limit should be used together too.'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllTrees'
+              examples:
+                Get all trees:
+                  value:
+                    trees:
+                      - id: cd9ef5a6-377e-479f-8efe-f55a5667d7a1
+                        description: Pé de Limão da Alanna
+                        specie: Limão Taiti
+                        fruitful: true
+                        status: accepted
+                        lat: -34.574956
+                        lng: 58.408454
+                        owner: true
+                        owner_nickname: Alanna
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+                example: 30
+                format: int32
+                minimum: 0
+              description: Total number of trees found
+              required: true
+        '401':
+          description: Unauthorized
+        '500':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              examples:
+                DB connection error:
+                  value:
+                    message: Could not establish connection with database.
+      security:
+        - APIKey: []
+  /users:
+    get:
+      summary: Gets all users registered
+      tags:
+        - Users
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GetUser'
+              examples:
+                Get all users:
+                  value:
+                    users:
+                      - id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+                        name: Alanna Vanzella
+                        nickname: Alanna
+                        email: alanna@example.com
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+                example: 30
+                format: int32
+                minimum: 0
+              description: Total number of users found
+              required: true
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              examples:
+                DB connection error:
+                  value:
+                    message: Could not establish connection with database.
+      operationId: get-users
+      security:
+        - APIKey: []
+      description: Gets all registered users' details.
+    post:
+      summary: Creates user
+      operationId: post-users
+      tags:
+        - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+            examples:
+              Register user Alanna:
+                value:
+                  name: Alanna Vanzella
+                  nickname: Alanna
+                  email: alanna@example.com
+                  password: pa$$word
+        description: ''
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              examples:
+                E-mail already registered:
+                  value:
+                    message: email already registered.
+        '422':
+          description: Unprocessable Entity
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              examples:
+                DB connection error:
+                  value:
+                    message: Could not establish connection with database.
+      security:
+        - APIKey: []
+      description: 'Creates a user, all fields must be specified.'
+  '/users/{userId}/trees':
+    parameters:
+      - schema:
+          type: string
+        name: userId
+        in: path
+        required: true
+    get:
+      summary: Gets all trees of a specific user
+      tags:
+        - Users
+      parameters:
+        - schema:
+            type: number
+            format: float
+          in: query
+          name: lat
+          description: Latitude
+        - schema:
+            type: number
+            format: float
+          in: query
+          name: lng
+          description: Longitude
+        - schema:
+            type: number
+            example: 0.5
+            format: float
+            minimum: 0.5
+          in: query
+          name: radius
+          description: 'Max distance from the point(lat, lng)'
+        - schema:
+            type: string
+            enum:
+              - accepted
+              - pending
+              - rejected
+            example: accepted
+          in: query
+          name: status
+          description: Tree's status
+        - schema:
+            type: integer
+            format: int32
+            example: 50
+            minimum: 1
+          in: query
+          name: offset
+          description: Pagination offset
+        - schema:
+            type: integer
+            format: int32
+            example: 30
+            minimum: 1
+          in: query
+          name: limit
+          description: Pagination limit
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllTrees'
+              examples:
+                Get all Alanna's trees:
+                  value:
+                    trees:
+                      - id: cd9ef5a6-377e-479f-8efe-f55a5667d7a1
+                        description: Pé de Limão da Alanna
+                        specie: Limão Taiti
+                        fruitful: true
+                        status: accepted
+                        lat: -34.574956
+                        lng: 58.408454
+                        owner: true
+                        owner_nickname: Alanna
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+                example: 30
+                format: int32
+                minimum: 0
+              description: Total number of trees found
+              required: true
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              examples:
+                DB connection error:
+                  value:
+                    message: Could not establish connection with database.
+      operationId: get-users-userId-trees
+      description: 'Gets all trees of a specific user, filters and pagination parameters can be used. Latitude, longitude and radius should be used together, as offset and limit should be used together too.'
+      security:
+        - APIKey: []
+    post:
+      summary: Creates a tree
+      operationId: post-users-userId-trees
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '422':
+          description: Unprocessable Entity
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              examples:
+                DB connection error:
+                  value:
+                    message: Could not establish connection with database.
+      tags:
+        - Users
+      description: A user can use this endpoint to register a tree.
+      security:
+        - APIKey: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTree'
+            examples:
+              Creating Alanna's frist tree:
+                value:
+                  description: Pé de Limão da Alanna
+                  specie: Limão Taiti
+                  fruitful: true
+                  status: accepted
+                  lat: -34.574956
+                  lng: 58.408454
+        description: ''
+  '/users/{userId}/trees/{treeId}':
+    parameters:
+      - schema:
+          type: string
+        name: userId
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: treeId
+        in: path
+        required: true
+    get:
+      summary: Gets details of a user's tree
+      tags:
+        - Users
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTree'
+              examples:
+                Pé de Limão da Alanna:
+                  value:
+                    id: cd9ef5a6-377e-479f-8efe-f55a5667d7a1
+                    description: Pé de Limão da Alanna
+                    specie: Limão Taiti
+                    fruitful: true
+                    status: accepted
+                    lat: -34.574956
+                    lng: 58.408454
+                    owner: true
+                    owner_nickname: Alanna
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              examples:
+                DB connection error:
+                  value:
+                    message: Could not establish connection with database.
+      operationId: get-users-userId-trees-treeId
+      description: This endpoint is intended to be used by a user to get informations of one of his/her own tree.
+    delete:
+      summary: Deletes user's tree
+      operationId: delete-users-userId-trees-treeId
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              examples:
+                DB connection error:
+                  value:
+                    message: Could not establish connection with database.
+      tags:
+        - Users
+      description: This endpoint is intended to be used by a user to delete one of his/her own tree.
+      security:
+        - APIKey: []
+components:
+  schemas:
+    CreateUser:
+      title: Create User
+      type: object
+      x-examples:
+        User-Alanna:
+          id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+          name: Alanna Vanzella
+          nickname: Alanna
+          email: alanna@example.com
+          password: pa$$word
+      properties:
+        name:
+          type: string
+          description: User's real full name.
+        nickname:
+          type: string
+          description: User's nickname.
+        email:
+          type: string
+          description: User's email address.
+          format: email
+        password:
+          type: string
+          description: User's password(hashed).
+          format: password
+      required:
+        - name
+        - nickname
+        - email
+        - password
+    GetTree:
+      title: Get Tree
+      type: object
+      x-examples:
+        Pé de Limão da Alanna:
+          id: cd9ef5a6-377e-479f-8efe-f55a5667d7a1
+          description: Pé de Limão da Alanna
+          specie: Limão Taiti
+          fruitful: true
+          status: accepted
+          lat: -34.574956
+          lng: 58.408454
+          owner: true
+          owner_nickname: Alanna
+      description: ''
+      properties:
+        id:
+          type: string
+          description: Tree's ID(UUID).
+          format: uuid
+        description:
+          type: string
+          description: 'Tree''s description, also could be the tree''s name given by the owner.'
+        specie:
+          type: string
+          description: Tree's specie.
+        fruitful:
+          type: boolean
+          description: The specie is fruitful?
+        status:
+          type: string
+          description: 'Tree''s status, can be accepted, pending or rejected.'
+          enum:
+            - accepted
+            - pending
+            - rejected
+        lat:
+          type: number
+          description: Tree's location latitude.
+          format: float
+        lng:
+          type: number
+          description: Tree's location longitude.
+          format: float
+        owner:
+          type: boolean
+          description: The user requesting the tree is its owner?
+        owner_nickname:
+          type: string
+          description: Tree's owners nickname
+      required:
+        - id
+        - description
+        - specie
+        - fruitful
+        - status
+        - lat
+        - lng
+        - owner
+        - owner_nickname
+    GetUser:
+      title: Get User
+      type: object
+      x-examples:
+        User-Alanna:
+          id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+          name: Alanna Vanzella
+          nickname: Alanna
+          email: alanna@example.com
+      properties:
+        id:
+          type: string
+          description: User's ID(UUID).
+          format: uuid
+        name:
+          type: string
+          description: User's real full name.
+        nickname:
+          type: string
+          description: User's nickname.
+        email:
+          type: string
+          description: User's email address.
+          format: email
+      required:
+        - id
+        - name
+        - nickname
+        - email
+    CreateTree:
+      title: CreateTree
+      type: object
+      x-examples:
+        Pé de Limão da Alanna:
+          description: Pé de Limão da Alanna
+          specie: Limão Taiti
+          fruitful: true
+          lat: -34.574956
+          lng: 58.408454
+      description: ''
+      properties:
+        description:
+          type: string
+          description: 'Tree''s description, also could be the tree''s name given by the owner.'
+        specie:
+          type: string
+          description: Tree's specie.
+        fruitful:
+          type: boolean
+          description: The specie is fruitful?
+        lat:
+          type: number
+          description: Tree's location latitude.
+          format: float
+        lng:
+          type: number
+          description: Tree's location longitude.
+          format: float
+      required:
+        - description
+        - specie
+        - fruitful
+        - lat
+        - lng
+    ErrorMessage:
+      title: ErrorMessage
+      type: object
+      properties:
+        message:
+          type: string
+          description: Message explaining the problem
+      required:
+        - message
+      x-examples:
+        E-mail already registered.:
+          message: email already registered.
+        DB connection error:
+          message: Could not establish connection with database.
+    GetAllTrees:
+      title: GetAllTrees
+      type: object
+      properties:
+        trees:
+          type: array
+          items:
+            $ref: '#/components/schemas/GetTree'
+      x-examples:
+        Get all trees:
+          trees:
+            - id: cd9ef5a6-377e-479f-8efe-f55a5667d7a1
+              description: Pé de Limão da Alanna
+              specie: Limão Taiti
+              fruitful: true
+              status: accepted
+              lat: -34.574956
+              lng: 58.408454
+              owner: true
+              owner_nickname: Alanna
+  securitySchemes:
+    APIKey:
+      name: Authorization
+      type: apiKey
+      in: header
+tags:
+  - name: Trees
+  - name: Users
+security:
+  - APIKey: []

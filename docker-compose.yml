@@ -12,14 +12,13 @@ services:
     volumes:
       - .:/app
   db:
-    image: 'postgres:11-alpine'
+    image: 'postgres:12-alpine'
     env_file:
       - .env
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
-      POSTGRES_HOST_AUTH_METHOD: trust
     restart: always
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      - ./pgdata:/var/lib/postgresql/data/pgdata

@@ -1,23 +1,23 @@
-defmodule PetreeApi.Schema do
+defmodule PetreeApi.Trees do
   @moduledoc """
-  The Schema context.
+  The Trees context.
   """
 
   import Ecto.Query, warn: false
   alias PetreeApi.Repo
 
-  alias PetreeApi.Schema.Tree
+  alias PetreeApi.Trees.Tree
 
   @doc """
-  Returns the list of tree.
+  Returns the list of trees.
 
   ## Examples
 
-      iex> list_tree()
+      iex> list_trees()
       [%Tree{}, ...]
 
   """
-  def list_tree do
+  def list_trees do
     Repo.all(Tree)
   end
 

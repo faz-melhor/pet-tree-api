@@ -9,6 +9,13 @@ defmodule PetreeApi.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ],
       aliases: aliases(),
       deps: deps()
     ]
@@ -43,7 +50,10 @@ defmodule PetreeApi.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:credo, "~> 1.5.0", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.5.0", only: [:dev, :test], runtime: false},
+      {:ex_machina, "~> 2.4", only: :test},
+      {:excoveralls, "~> 0.10", only: :test},
+      {:bcrypt_elixir, "~> 2.0"}
     ]
   end
 
