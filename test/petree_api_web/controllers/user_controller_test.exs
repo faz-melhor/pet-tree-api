@@ -1,27 +1,9 @@
 defmodule PetreeApiWeb.UserControllerTest do
   use PetreeApiWeb.ConnCase
 
-  alias PetreeApi.Accounts
+  import PetreeApi.Factory
+
   alias PetreeApi.Accounts.User
-
-  @create_attrs %{
-    email: "some email",
-    name: "some name",
-    nickname: "some nickname",
-    password_hash: "some password_hash"
-  }
-  @update_attrs %{
-    email: "some updated email",
-    name: "some updated name",
-    nickname: "some updated nickname",
-    password_hash: "some updated password_hash"
-  }
-  @invalid_attrs %{email: nil, name: nil, nickname: nil, password_hash: nil}
-
-  def fixture(:user) do
-    {:ok, user} = Accounts.create_user(@create_attrs)
-    user
-  end
 
   setup %{conn: conn} do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
@@ -36,22 +18,49 @@ defmodule PetreeApiWeb.UserControllerTest do
 
   describe "create user" do
     test "renders user when data is valid", %{conn: conn} do
-      conn = post(conn, Routes.user_path(conn, :create), user: @create_attrs)
+      user = build(:user, password: "123456")
+
+      conn = post(conn, Routes.user_path(conn, :create), user: user |> Map.from_struct())
       assert %{"id" => id} = json_response(conn, 201)["data"]
+
+      %{name: name, email: email, nickname: nickname} = user
 
       conn = get(conn, Routes.user_path(conn, :show, id))
 
       assert %{
-               "id" => id,
-               "email" => "some email",
-               "name" => "some name",
-               "nickname" => "some nickname",
-               "password_hash" => "some password_hash"
+               "id" => created_id,
+               "email" => created_email,
+               "name" => created_name,
+               "nickname" => created_nickname
              } = json_response(conn, 200)["data"]
+
+      assert name == created_name
+      assert email == created_email
+      assert nickname == created_nickname
+      assert id == created_id
     end
 
-    test "renders errors when data is invalid", %{conn: conn} do
-      conn = post(conn, Routes.user_path(conn, :create), user: @invalid_attrs)
+    test "renders errors when name is invalid", %{conn: conn} do
+      user = build(:user, name: nil)
+      conn = post(conn, Routes.user_path(conn, :create), user: user |> Map.from_struct())
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+
+    test "renders errors when email is invalid", %{conn: conn} do
+      user = build(:user, email: "email")
+      conn = post(conn, Routes.user_path(conn, :create), user: user |> Map.from_struct())
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+
+    test "renders errors when nickname is invalid", %{conn: conn} do
+      user = build(:user, nickname: nil)
+      conn = post(conn, Routes.user_path(conn, :create), user: user |> Map.from_struct())
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+
+    test "renders errors when password is invalid", %{conn: conn} do
+      user = build(:user)
+      conn = post(conn, Routes.user_path(conn, :create), user: user |> Map.from_struct())
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
@@ -59,23 +68,89 @@ defmodule PetreeApiWeb.UserControllerTest do
   describe "update user" do
     setup [:create_user]
 
-    test "renders user when data is valid", %{conn: conn, user: %User{id: id} = user} do
-      conn = put(conn, Routes.user_path(conn, :update, user), user: @update_attrs)
+    test "renders user when name data is valid", %{conn: conn, user: %User{id: id} = user} do
+      name = "Janet Smith"
+
+      conn = put(conn, Routes.user_path(conn, :update, user), user: %{name: name})
       assert %{"id" => ^id} = json_response(conn, 200)["data"]
 
       conn = get(conn, Routes.user_path(conn, :show, id))
 
       assert %{
-               "id" => id,
-               "email" => "some updated email",
-               "name" => "some updated name",
-               "nickname" => "some updated nickname",
-               "password_hash" => "some updated password_hash"
+               "id" => updated_id,
+               "name" => updated_name
              } = json_response(conn, 200)["data"]
+
+      assert id == updated_id
+      assert name == updated_name
     end
 
-    test "renders errors when data is invalid", %{conn: conn, user: user} do
-      conn = put(conn, Routes.user_path(conn, :update, user), user: @invalid_attrs)
+    test "renders user when email data is valid", %{conn: conn, user: %User{id: id} = user} do
+      email = "emailtest@mail.com"
+
+      conn = put(conn, Routes.user_path(conn, :update, user), user: %{email: email})
+      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+
+      conn = get(conn, Routes.user_path(conn, :show, id))
+
+      assert %{
+               "id" => updated_id,
+               "email" => updated_email
+             } = json_response(conn, 200)["data"]
+
+      assert id == updated_id
+      assert email == updated_email
+    end
+
+    test "renders user when nickname data is valid", %{conn: conn, user: %User{id: id} = user} do
+      nickname = "Janet"
+
+      conn = put(conn, Routes.user_path(conn, :update, user), user: %{nickname: nickname})
+      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+
+      conn = get(conn, Routes.user_path(conn, :show, id))
+
+      assert %{
+               "id" => updated_id,
+               "nickname" => updated_nickname
+             } = json_response(conn, 200)["data"]
+
+      assert id == updated_id
+      assert nickname == updated_nickname
+    end
+
+    test "renders user when password data is valid", %{conn: conn, user: %User{id: id} = user} do
+      password = "12345"
+
+      conn = put(conn, Routes.user_path(conn, :update, user), user: %{password: password})
+      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+    end
+
+    test "renders errors when name data is invalid", %{conn: conn, user: user} do
+      name = 1
+
+      conn = put(conn, Routes.user_path(conn, :update, user), user: %{name: name})
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+
+    test "renders errors when email data is invalid", %{conn: conn, user: user} do
+      email = "email"
+
+      conn = put(conn, Routes.user_path(conn, :update, user), user: %{email: email})
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+
+    test "renders errors when nickname data is invalid", %{conn: conn, user: user} do
+      nickname = 1
+
+      conn = put(conn, Routes.user_path(conn, :update, user), user: %{nickname: nickname})
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+
+    test "renders errors when password data is invalid", %{conn: conn, user: user} do
+      password = 1
+
+      conn = put(conn, Routes.user_path(conn, :update, user), user: %{password: password})
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
@@ -94,7 +169,7 @@ defmodule PetreeApiWeb.UserControllerTest do
   end
 
   defp create_user(_) do
-    user = fixture(:user)
+    user = insert(:user)
     %{user: user}
   end
 end

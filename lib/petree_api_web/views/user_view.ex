@@ -11,10 +11,11 @@ defmodule PetreeApiWeb.UserView do
   end
 
   def render("user.json", %{user: user}) do
-    %{id: user.id,
+    %{
+      id: user.id,
       name: user.name,
       nickname: user.nickname,
-      email: user.email,
-      password_hash: user.password_hash}
+      email: user.email
+    }
   end
 end
