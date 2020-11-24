@@ -1,5 +1,7 @@
 # PetreeApi
 
+![Elixir CI](https://github.com/faz-melhor/pet-tree-api/workflows/Elixir%20CI/badge.svg)
+
 To start your Phoenix server local:
 
   * Install PostgreSQL in your local machine
