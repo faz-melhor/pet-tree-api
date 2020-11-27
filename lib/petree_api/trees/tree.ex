@@ -2,7 +2,7 @@ defmodule PetreeApi.Trees.Tree do
   @moduledoc """
   Tree schema
   """
-  use Ecto.Schema
+  use PetreeApi.Schema
   import Ecto.Changeset
 
   alias PetreeApi.Accounts.User

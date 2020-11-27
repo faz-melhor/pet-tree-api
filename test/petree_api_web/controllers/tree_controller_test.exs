@@ -64,7 +64,7 @@ defmodule PetreeApiWeb.TreeControllerTest do
 
     test "renders errors when description data is invalid", %{conn: conn} do
       user = insert(:user)
-      tree = build(:tree, user: user, description: 1)
+      tree = build(:tree, user_id: user.id, description: 1)
 
       conn = post(conn, Routes.tree_path(conn, :create), tree: tree |> Map.from_struct())
       assert json_response(conn, 422)["errors"] != %{}
@@ -72,7 +72,7 @@ defmodule PetreeApiWeb.TreeControllerTest do
 
     test "renders errors when fruitful data is invalid", %{conn: conn} do
       user = insert(:user)
-      tree = build(:tree, user: user, fruitful: 1)
+      tree = build(:tree, user_id: user.id, fruitful: 1)
 
       conn = post(conn, Routes.tree_path(conn, :create), tree: tree |> Map.from_struct())
       assert json_response(conn, 422)["errors"] != %{}
@@ -80,7 +80,7 @@ defmodule PetreeApiWeb.TreeControllerTest do
 
     test "renders errors when latitude data is invalid", %{conn: conn} do
       user = insert(:user)
-      tree = build(:tree, user: user, lat: "lat")
+      tree = build(:tree, user_id: user.id, lat: "lat")
 
       conn = post(conn, Routes.tree_path(conn, :create), tree: tree |> Map.from_struct())
       assert json_response(conn, 422)["errors"] != %{}
@@ -88,7 +88,7 @@ defmodule PetreeApiWeb.TreeControllerTest do
 
     test "renders errors when longitude data is invalid", %{conn: conn} do
       user = insert(:user)
-      tree = build(:tree, user: user, lng: "lng")
+      tree = build(:tree, user_id: user.id, lng: "lng")
 
       conn = post(conn, Routes.tree_path(conn, :create), tree: tree |> Map.from_struct())
       assert json_response(conn, 422)["errors"] != %{}
@@ -96,7 +96,7 @@ defmodule PetreeApiWeb.TreeControllerTest do
 
     test "renders errors when specie data is invalid", %{conn: conn} do
       user = insert(:user)
-      tree = build(:tree, user: user, specie: 1)
+      tree = build(:tree, user_id: user.id, specie: 1)
 
       conn = post(conn, Routes.tree_path(conn, :create), tree: tree |> Map.from_struct())
       assert json_response(conn, 422)["errors"] != %{}
@@ -104,7 +104,7 @@ defmodule PetreeApiWeb.TreeControllerTest do
 
     test "renders errors when status data is invalid", %{conn: conn} do
       user = insert(:user)
-      tree = build(:tree, user: user, status: :ok)
+      tree = build(:tree, user_id: user.id, status: :ok)
 
       conn = post(conn, Routes.tree_path(conn, :create), tree: tree |> Map.from_struct())
       assert json_response(conn, 422)["errors"] != %{}

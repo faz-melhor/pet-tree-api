@@ -26,7 +26,7 @@ defmodule PetreeApi.TreesTest do
 
     test "create_tree/1 with valid data creates a tree" do
       user = insert(:user)
-      tree = build(:tree, user: user, user_id: user.id)
+      tree = build(:tree, user_id: user.id)
 
       assert {:ok, %Tree{} = created_tree} = Trees.create_tree(tree |> Map.from_struct())
       assert tree.description == created_tree.description
@@ -46,35 +46,35 @@ defmodule PetreeApi.TreesTest do
 
     test "create_tree/1 with invalid fruitful data returns error changeset" do
       user = insert(:user)
-      tree = build(:tree, fruitful: 1, user: user)
+      tree = build(:tree, fruitful: 1, user_id: user.id)
 
       assert {:error, %Ecto.Changeset{}} = Trees.create_tree(tree |> Map.from_struct())
     end
 
     test "create_tree/1 with invalid latatitude data returns error changeset" do
       user = insert(:user)
-      tree = build(:tree, lat: "lat", user: user)
+      tree = build(:tree, lat: "lat", user_id: user.id)
 
       assert {:error, %Ecto.Changeset{}} = Trees.create_tree(tree |> Map.from_struct())
     end
 
     test "create_tree/1 with invalid longitude data returns error changeset" do
       user = insert(:user)
-      tree = build(:tree, lng: "lng", user: user)
+      tree = build(:tree, lng: "lng", user_id: user.id)
 
       assert {:error, %Ecto.Changeset{}} = Trees.create_tree(tree |> Map.from_struct())
     end
 
     test "create_tree/1 with invalid specie data returns error changeset" do
       user = insert(:user)
-      tree = build(:tree, specie: 1, user: user)
+      tree = build(:tree, specie: 1, user_id: user.id)
 
       assert {:error, %Ecto.Changeset{}} = Trees.create_tree(tree |> Map.from_struct())
     end
 
     test "create_tree/1 with invalid status data returns error changeset" do
       user = insert(:user)
-      tree = build(:tree, status: :ok, user: user)
+      tree = build(:tree, status: :ok, user_id: user.id)
 
       assert {:error, %Ecto.Changeset{}} = Trees.create_tree(tree |> Map.from_struct())
     end
@@ -169,7 +169,7 @@ defmodule PetreeApi.TreesTest do
       tree = insert(:tree, user: user)
       invalid_fruitful = 1
 
-      assert {:error, %Ecto.Changeset{}} = Trees.update_tree(tree, %{user_id: invalid_fruitful})
+      assert {:error, %Ecto.Changeset{}} = Trees.update_tree(tree, %{fruitful: invalid_fruitful})
       assert tree = Trees.get_tree!(tree.id)
       assert tree.fruitful != invalid_fruitful
     end
@@ -179,7 +179,7 @@ defmodule PetreeApi.TreesTest do
       tree = insert(:tree, user: user)
       invalid_latitude = "lat"
 
-      assert {:error, %Ecto.Changeset{}} = Trees.update_tree(tree, %{user_id: invalid_latitude})
+      assert {:error, %Ecto.Changeset{}} = Trees.update_tree(tree, %{lat: invalid_latitude})
       assert tree = Trees.get_tree!(tree.id)
       assert tree.lat != invalid_latitude
     end
