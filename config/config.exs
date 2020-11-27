@@ -8,7 +8,8 @@
 use Mix.Config
 
 config :petree_api,
-  ecto_repos: [PetreeApi.Repo]
+  ecto_repos: [PetreeApi.Repo],
+  generators: [binary_id: true]
 
 # Configures the endpoint
 config :petree_api, PetreeApiWeb.Endpoint,
