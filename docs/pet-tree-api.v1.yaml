@@ -330,7 +330,7 @@ paths:
                   name: Alanna Vanzella
                   nickname: Alanna
                   email: alanna@example.com
-                  password: pa$$word
+                  password: password
         description: ''
       responses:
         '201':
@@ -608,7 +608,7 @@ components:
           name: Alanna Vanzella
           nickname: Alanna
           email: alanna@example.com
-          password: pa$$word
+          password: password
       properties:
         name:
           type: string
@@ -622,7 +622,7 @@ components:
           format: email
         password:
           type: string
-          description: User's password(hashed).
+          description: User's password.
           format: password
       required:
         - name

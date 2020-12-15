@@ -5,11 +5,11 @@ defmodule PetreeApiWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/api", PetreeApiWeb do
+  scope "/v1", PetreeApiWeb do
     pipe_through :api
 
     resources "/trees", TreeController
-    resources "/users", UserController
+    resources "/users", UserController, except: [:new, :edit]
   end
 
   # Enables LiveDashboard only for development

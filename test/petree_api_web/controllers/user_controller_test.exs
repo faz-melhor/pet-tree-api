@@ -20,48 +20,44 @@ defmodule PetreeApiWeb.UserControllerTest do
     test "renders user when data is valid", %{conn: conn} do
       user = build(:user, password: "123456")
 
-      conn = post(conn, Routes.user_path(conn, :create), user: user |> Map.from_struct())
-      assert %{"id" => id} = json_response(conn, 201)["data"]
-
-      %{name: name, email: email, nickname: nickname} = user
-
-      conn = get(conn, Routes.user_path(conn, :show, id))
-
-      assert %{
-               "id" => created_id,
-               "email" => created_email,
-               "name" => created_name,
-               "nickname" => created_nickname
-             } = json_response(conn, 200)["data"]
-
-      assert name == created_name
-      assert email == created_email
-      assert nickname == created_nickname
-      assert id == created_id
+      conn = post(conn, Routes.user_path(conn, :create), user |> Map.from_struct())
+      assert conn.status == 201
     end
 
     test "renders errors when name is invalid", %{conn: conn} do
-      user = build(:user, name: nil)
-      conn = post(conn, Routes.user_path(conn, :create), user: user |> Map.from_struct())
-      assert json_response(conn, 422)["errors"] != %{}
+      user = build(:user, name: nil, password: "123456")
+      conn = post(conn, Routes.user_path(conn, :create), user |> Map.from_struct())
+      assert json_response(conn, 422)["errors"] == %{"name" => ["can't be blank"]}
     end
 
     test "renders errors when email is invalid", %{conn: conn} do
-      user = build(:user, email: "email")
-      conn = post(conn, Routes.user_path(conn, :create), user: user |> Map.from_struct())
-      assert json_response(conn, 422)["errors"] != %{}
+      user = build(:user, email: "email", password: "123456")
+      conn = post(conn, Routes.user_path(conn, :create), user |> Map.from_struct())
+      assert json_response(conn, 422)["errors"] == %{"email" => ["has invalid format"]}
+    end
+
+    test "renders errors when email is blank", %{conn: conn} do
+      user = build(:user, email: "", password: "123456")
+      conn = post(conn, Routes.user_path(conn, :create), user |> Map.from_struct())
+      assert json_response(conn, 422)["errors"] == %{"email" => ["can't be blank"]}
+    end
+
+    test "renders errors when email already exist", %{conn: conn} do
+      user = insert(:user, password: "123456")
+      conn = post(conn, Routes.user_path(conn, :create), user |> Map.from_struct())
+      assert json_response(conn, 409)["errors"] == %{"email" => ["has already been taken"]}
     end
 
     test "renders errors when nickname is invalid", %{conn: conn} do
-      user = build(:user, nickname: nil)
-      conn = post(conn, Routes.user_path(conn, :create), user: user |> Map.from_struct())
-      assert json_response(conn, 422)["errors"] != %{}
+      user = build(:user, nickname: nil, password: "123456")
+      conn = post(conn, Routes.user_path(conn, :create), user |> Map.from_struct())
+      assert json_response(conn, 422)["errors"] == %{"nickname" => ["can't be blank"]}
     end
 
     test "renders errors when password is invalid", %{conn: conn} do
       user = build(:user)
-      conn = post(conn, Routes.user_path(conn, :create), user: user |> Map.from_struct())
-      assert json_response(conn, 422)["errors"] != %{}
+      conn = post(conn, Routes.user_path(conn, :create), user |> Map.from_struct())
+      assert json_response(conn, 422)["errors"] == %{"password" => ["can't be blank"]}
     end
   end
 
