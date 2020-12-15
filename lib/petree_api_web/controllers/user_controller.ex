@@ -11,12 +11,10 @@ defmodule PetreeApiWeb.UserController do
     render(conn, "index.json", users: users)
   end
 
-  def create(conn, %{"user" => user_params}) do
-    with {:ok, %User{} = user} <- Accounts.create_user(user_params) do
+  def create(conn, params) do
+    with {:ok, %User{}} <- Accounts.create_user(params) do
       conn
-      |> put_status(:created)
-      |> put_resp_header("location", Routes.user_path(conn, :show, user))
-      |> render("show.json", user: user)
+      |> send_resp(201, "")
     end
   end
 
