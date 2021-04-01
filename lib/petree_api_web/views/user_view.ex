@@ -3,11 +3,11 @@ defmodule PetreeApiWeb.UserView do
   alias PetreeApiWeb.UserView
 
   def render("index.json", %{users: users}) do
-    %{data: render_many(users, UserView, "user.json")}
+    %{users: render_many(users, UserView, "user.json")}
   end
 
   def render("show.json", %{user: user}) do
-    %{data: render_one(user, UserView, "user.json")}
+    render_one(user, UserView, "user.json")
   end
 
   def render("user.json", %{user: user}) do
