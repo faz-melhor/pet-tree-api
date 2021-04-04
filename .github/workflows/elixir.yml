@@ -33,6 +33,7 @@ jobs:
         with:
           elixir-version: "1.7.4"
           otp-version: "23.1.1"
+          experimental-otp: true
       - name: Restore dependencies cache
         uses: actions/cache@v2
         with:
