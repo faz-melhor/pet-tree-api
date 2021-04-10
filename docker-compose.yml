@@ -12,7 +12,7 @@ services:
     volumes:
       - .:/app
   db:
-    image: 'postgres:12-alpine'
+    image: 'postgis/postgis:12-2.5-alpine'
     env_file:
       - .env
     environment:

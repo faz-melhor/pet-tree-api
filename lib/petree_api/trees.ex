@@ -51,7 +51,7 @@ defmodule PetreeApi.Trees do
   """
   def create_tree(attrs \\ %{}) do
     %Tree{}
-    |> Tree.changeset(attrs)
+    |> Tree.create_changeset(attrs)
     |> Repo.insert()
   end
 
@@ -69,7 +69,7 @@ defmodule PetreeApi.Trees do
   """
   def update_tree(%Tree{} = tree, attrs) do
     tree
-    |> Tree.changeset(attrs)
+    |> Tree.update_changeset(attrs)
     |> Repo.update()
   end
 
@@ -99,6 +99,6 @@ defmodule PetreeApi.Trees do
 
   """
   def change_tree(%Tree{} = tree, attrs \\ %{}) do
-    Tree.changeset(tree, attrs)
+    Tree.update_changeset(tree, attrs)
   end
 end

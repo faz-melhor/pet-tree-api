@@ -10,8 +10,7 @@ defmodule PetreeApi.Trees.Tree do
   schema "trees" do
     field :description, :string
     field :fruitful, :boolean, default: false
-    field :lat, :decimal
-    field :lng, :decimal
+    field :location, Geo.PostGIS.Geometry
     field :specie, :string
     field :status, Ecto.Enum, values: [:pending, :accepted, :rejected]
 
@@ -21,25 +20,51 @@ defmodule PetreeApi.Trees.Tree do
   end
 
   @doc false
-  def changeset(tree, attrs) do
-    tree
-    |> cast(attrs, [:description, :specie, :fruitful, :status, :lat, :lng, :user_id])
-    |> validate_required([:description, :specie, :fruitful, :status, :lat, :lng, :user_id])
-    |> foreign_key_constraint(:user_id)
-  end
-
-  @doc false
   def create_changeset(tree, attrs) do
     tree
-    |> cast(attrs, [:description, :specie, :fruitful, :status, :lat, :lng, :user_id])
-    |> validate_required([:description, :specie, :fruitful, :status, :lat, :lng, :user_id])
+    |> cast(attrs, [:description, :specie, :fruitful, :status, :location, :user_id])
+    |> validate_required([:description, :specie, :fruitful, :status, :location, :user_id])
+    |> validate_location(:location)
     |> foreign_key_constraint(:user_id)
   end
 
   @doc false
   def update_changeset(tree, attrs) do
     tree
-    |> cast(attrs, [:description, :specie, :fruitful, :status, :lat, :lng, :user_id])
+    |> cast(attrs, [:description, :specie, :fruitful, :status, :location, :user_id])
+    |> validate_location(:location)
+    |> validate_user_id()
     |> foreign_key_constraint(:user_id)
+  end
+
+  @doc """
+  Validate user id to prevent nil value
+  """
+  def validate_user_id(changeset) do
+    case get_field(changeset, :user_id) do
+      nil -> add_error(changeset, :user_id, "can't be blank", validation: :required)
+      _ -> changeset
+    end
+  end
+
+  @doc """
+  Validate longitude and latitude inside Geo.Point object
+  """
+  def validate_location(changeset, field) do
+    validate_change(changeset, field, fn _, value ->
+      %Geo.Point{coordinates: {lat, lng}} = value
+
+      case is_number(lat) and is_number(lng) do
+        true ->
+          []
+
+        false ->
+          [
+            location:
+              {"latitude and/or longitude are invalid",
+               [type: :number, validation: "validate_location"]}
+          ]
+      end
+    end)
   end
 end
