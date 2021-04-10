@@ -3,22 +3,24 @@ defmodule PetreeApiWeb.TreeView do
   alias PetreeApiWeb.TreeView
 
   def render("index.json", %{trees: trees}) do
-    %{data: render_many(trees, TreeView, "tree.json")}
+    %{trees: render_many(trees, TreeView, "tree.json")}
   end
 
   def render("show.json", %{tree: tree}) do
-    %{data: render_one(tree, TreeView, "tree.json")}
+    render_one(tree, TreeView, "tree.json")
   end
 
   def render("tree.json", %{tree: tree}) do
+    %Geo.Point{coordinates: {lat, lng}} = tree.location
+
     %{
       id: tree.id,
       description: tree.description,
       specie: tree.specie,
       fruitful: tree.fruitful,
       status: tree.status,
-      lat: tree.lat,
-      lng: tree.lng,
+      lat: lat,
+      lng: lng,
       user_id: tree.user_id
     }
   end

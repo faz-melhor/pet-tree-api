@@ -17,11 +17,13 @@ defmodule PetreeApi.Factory do
   end
 
   def tree_factory do
+    lat = -34.57613278928747
+    lng = -58.40964771739279
+
     %Tree{
       description: sequence(:description, &"Jane's Lemon Tree #{&1}"),
       fruitful: false,
-      lat: Decimal.new("-34.574956"),
-      lng: Decimal.new("58.408454"),
+      location: %Geo.Point{coordinates: {lat, lng}, srid: 4326},
       status: :pending,
       specie: "Tahiti Lemon",
       user: build(:user)

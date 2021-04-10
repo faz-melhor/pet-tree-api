@@ -31,8 +31,7 @@ defmodule PetreeApi.TreesTest do
       assert {:ok, %Tree{} = created_tree} = Trees.create_tree(tree |> Map.from_struct())
       assert tree.description == created_tree.description
       assert tree.fruitful == created_tree.fruitful
-      assert tree.lat == created_tree.lat
-      assert tree.lng == created_tree.lng
+      assert tree.location == created_tree.location
       assert tree.status == created_tree.status
       assert tree.specie == created_tree.specie
       assert tree.user_id == created_tree.user_id
@@ -53,14 +52,24 @@ defmodule PetreeApi.TreesTest do
 
     test "create_tree/1 with invalid latatitude data returns error changeset" do
       user = insert(:user)
-      tree = build(:tree, lat: "lat", user_id: user.id)
+
+      tree =
+        build(:tree,
+          location: %Geo.Point{coordinates: {"lat", -58.40964771739279}, srid: 4326},
+          user_id: user.id
+        )
 
       assert {:error, %Ecto.Changeset{}} = Trees.create_tree(tree |> Map.from_struct())
     end
 
     test "create_tree/1 with invalid longitude data returns error changeset" do
       user = insert(:user)
-      tree = build(:tree, lng: "lng", user_id: user.id)
+
+      tree =
+        build(:tree,
+          location: %Geo.Point{coordinates: {-34.57613278928747, "lng"}, srid: 4326},
+          user_id: user.id
+        )
 
       assert {:error, %Ecto.Changeset{}} = Trees.create_tree(tree |> Map.from_struct())
     end
@@ -97,22 +106,13 @@ defmodule PetreeApi.TreesTest do
       assert tree.fruitful == fruiful
     end
 
-    test "update_tree/2 with valid latitude data updates the tree" do
+    test "update_tree/2 with valid location data updates the tree" do
       user = insert(:user)
       tree = insert(:tree, user: user)
-      lat = Decimal.new("10.0")
+      new_location = %Geo.Point{coordinates: {10, 10}, srid: 4326}
 
-      assert {:ok, %Tree{} = tree} = Trees.update_tree(tree, %{lat: lat})
-      assert tree.lat == lat
-    end
-
-    test "update_tree/2 with valid longitude data updates the tree" do
-      user = insert(:user)
-      tree = insert(:tree, user: user)
-      lng = Decimal.new("10.0")
-
-      assert {:ok, %Tree{} = tree} = Trees.update_tree(tree, %{lng: lng})
-      assert tree.lng == lng
+      assert {:ok, %Tree{} = tree} = Trees.update_tree(tree, %{location: new_location})
+      assert tree.location == new_location
     end
 
     test "update_tree/2 with valid specie data updates the tree" do
@@ -177,21 +177,21 @@ defmodule PetreeApi.TreesTest do
     test "update_tree/2 with invalid latitude data returns error changeset" do
       user = insert(:user)
       tree = insert(:tree, user: user)
-      invalid_latitude = "lat"
+      invalid_location = %Geo.Point{coordinates: {"lat", -58.40964771739279}, srid: 4326}
 
-      assert {:error, %Ecto.Changeset{}} = Trees.update_tree(tree, %{lat: invalid_latitude})
+      assert {:error, %Ecto.Changeset{}} = Trees.update_tree(tree, %{location: invalid_location})
       assert tree = Trees.get_tree!(tree.id)
-      assert tree.lat != invalid_latitude
+      assert tree.location != invalid_location
     end
 
     test "update_tree/2 with invalid longitude data returns error changeset" do
       user = insert(:user)
       tree = insert(:tree, user: user)
-      invalid_longitude = "lng"
+      invalid_location = %Geo.Point{coordinates: {-34.57613278928747, "lng"}, srid: 4326}
 
-      assert {:error, %Ecto.Changeset{}} = Trees.update_tree(tree, %{lng: invalid_longitude})
+      assert {:error, %Ecto.Changeset{}} = Trees.update_tree(tree, %{location: invalid_location})
       assert tree = Trees.get_tree!(tree.id)
-      assert tree.lng != invalid_longitude
+      assert tree.location != invalid_location
     end
 
     test "update_tree/2 with invalid specie data returns error changeset" do
