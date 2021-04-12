@@ -21,12 +21,7 @@ To start your Phoenix server using Docker:
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+## API Specification
 
-## Learn more
-
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+* A API Specification can be found inside docs folder or online [here](https://faz-melhor.stoplight.io/docs/pet-tree/pet-tree-api.v1.yaml).
+* A mock server is available in this address: https://faz-melhor.stoplight.io/mocks/faz-melhor/pet-tree/2454148

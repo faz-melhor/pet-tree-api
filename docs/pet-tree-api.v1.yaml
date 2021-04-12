@@ -12,11 +12,7 @@ servers:
 paths:
   '/users/{userId}':
     parameters:
-      - schema:
-          type: string
-        name: userId
-        in: path
-        required: true
+      - $ref: '#/components/parameters/User-ID'
     get:
       summary: Gets User details
       tags:
@@ -52,16 +48,40 @@ paths:
                   value:
                     message: Could not establish connection with database.
       operationId: get-users-userId
-      security:
-        - APIKey: []
+      security: []
       description: Gets details of a specific user.
+    delete:
+      summary: Deletes User
+      operationId: delete-users-userId
+      responses:
+        '204':
+          description: No Content
+      description: Deletes a specific user.
+      security: []
+      tags:
+        - Users
+    patch:
+      summary: Updates User's information
+      operationId: patch-users-userId
+      responses:
+        '204':
+          description: No Content
+      security: []
+      description: Updates information of a specific user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+            examples:
+              UpdateUser-Alanna:
+                value:
+                  email: alanna@mail.com
+      tags:
+        - Users
   '/trees/{treeId}':
     parameters:
-      - schema:
-          type: string
-        name: treeId
-        in: path
-        required: true
+      - $ref: '#/components/parameters/Tree-ID'
     get:
       summary: Gets Tree's details
       tags:
@@ -81,8 +101,8 @@ paths:
                     specie: Limão Taiti
                     fruitful: true
                     status: accepted
-                    lat: -34.574956
-                    lng: 58.408454
+                    lat: -34.57613278928747
+                    lng: -58.40964771739279
                     owner: true
                     owner_nickname: Alanna
         '401':
@@ -104,8 +124,7 @@ paths:
       operationId: get-trees-treeId
       description: Gets details of a specific tree.
       parameters: []
-      security:
-        - APIKey: []
+      security: []
     patch:
       summary: Updates Tree's details
       operationId: patch-trees-treeId
@@ -163,8 +182,7 @@ paths:
       parameters: []
       tags:
         - Trees
-      security:
-        - APIKey: []
+      security: []
   /trees:
     get:
       summary: Gets all trees registered
@@ -172,52 +190,12 @@ paths:
         - Trees
       operationId: get-trees
       parameters:
-        - schema:
-            type: number
-            format: float
-          in: query
-          name: lat
-          description: Latitude
-        - schema:
-            type: number
-            format: float
-          in: query
-          name: lng
-          description: Longitude
-        - schema:
-            type: number
-            example: 0.5
-            format: float
-            minimum: 0.5
-          in: query
-          name: radius
-          description: 'Max distance from the point(lat, lng)'
-        - schema:
-            type: string
-            enum:
-              - accepted
-              - pending
-              - rejected
-            example: accepted
-          in: query
-          name: status
-          description: Tree's status
-        - schema:
-            type: integer
-            format: int32
-            example: 50
-            minimum: 1
-          in: query
-          name: offset
-          description: Pagination offset
-        - schema:
-            type: integer
-            format: int32
-            example: 30
-            minimum: 1
-          in: query
-          name: limit
-          description: Pagination limit
+        - $ref: '#/components/parameters/Latitude'
+        - $ref: '#/components/parameters/Longitude'
+        - $ref: '#/components/parameters/Radius'
+        - $ref: '#/components/parameters/Status'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
       description: 'Gets all trees registered, filters and pagination parameters can be used. Latitude, longitude and radius should be used together, as offset and limit should be used together too.'
       responses:
         '200':
@@ -235,8 +213,8 @@ paths:
                         specie: Limão Taiti
                         fruitful: true
                         status: accepted
-                        lat: -34.574956
-                        lng: 58.408454
+                        lat: -34.57613278928747
+                        lng: -58.40964771739279
                         owner: true
                         owner_nickname: Alanna
           headers:
@@ -260,8 +238,7 @@ paths:
                 DB connection error:
                   value:
                     message: Could not establish connection with database.
-      security:
-        - APIKey: []
+      security: []
   /users:
     get:
       summary: Gets all users registered
@@ -311,9 +288,11 @@ paths:
                   value:
                     message: Could not establish connection with database.
       operationId: get-users
-      security:
-        - APIKey: []
+      security: []
       description: Gets all registered users' details.
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
     post:
       summary: Creates user
       operationId: post-users
@@ -363,67 +342,22 @@ paths:
                 DB connection error:
                   value:
                     message: Could not establish connection with database.
-      security:
-        - APIKey: []
+      security: []
       description: 'Creates a user, all fields must be specified.'
   '/users/{userId}/trees':
     parameters:
-      - schema:
-          type: string
-        name: userId
-        in: path
-        required: true
+      - $ref: '#/components/parameters/User-ID'
     get:
       summary: Gets all trees of a specific user
       tags:
         - Users
       parameters:
-        - schema:
-            type: number
-            format: float
-          in: query
-          name: lat
-          description: Latitude
-        - schema:
-            type: number
-            format: float
-          in: query
-          name: lng
-          description: Longitude
-        - schema:
-            type: number
-            example: 0.5
-            format: float
-            minimum: 0.5
-          in: query
-          name: radius
-          description: 'Max distance from the point(lat, lng)'
-        - schema:
-            type: string
-            enum:
-              - accepted
-              - pending
-              - rejected
-            example: accepted
-          in: query
-          name: status
-          description: Tree's status
-        - schema:
-            type: integer
-            format: int32
-            example: 50
-            minimum: 1
-          in: query
-          name: offset
-          description: Pagination offset
-        - schema:
-            type: integer
-            format: int32
-            example: 30
-            minimum: 1
-          in: query
-          name: limit
-          description: Pagination limit
+        - $ref: '#/components/parameters/Latitude'
+        - $ref: '#/components/parameters/Longitude'
+        - $ref: '#/components/parameters/Radius'
+        - $ref: '#/components/parameters/Status'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
       responses:
         '200':
           description: OK
@@ -440,8 +374,8 @@ paths:
                         specie: Limão Taiti
                         fruitful: true
                         status: accepted
-                        lat: -34.574956
-                        lng: 58.408454
+                        lat: -34.57613278928747
+                        lng: -58.40964771739279
                         owner: true
                         owner_nickname: Alanna
           headers:
@@ -471,8 +405,7 @@ paths:
                     message: Could not establish connection with database.
       operationId: get-users-userId-trees
       description: 'Gets all trees of a specific user, filters and pagination parameters can be used. Latitude, longitude and radius should be used together, as offset and limit should be used together too.'
-      security:
-        - APIKey: []
+      security: []
     post:
       summary: Creates a tree
       operationId: post-users-userId-trees
@@ -500,35 +433,25 @@ paths:
       tags:
         - Users
       description: A user can use this endpoint to register a tree.
-      security:
-        - APIKey: []
+      security: []
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateTree'
             examples:
-              Creating Alanna's frist tree:
+              Creating Alanna's first tree:
                 value:
                   description: Pé de Limão da Alanna
                   specie: Limão Taiti
                   fruitful: true
                   status: accepted
-                  lat: -34.574956
-                  lng: 58.408454
-        description: ''
+                  lat: -34.57613278928747
+                  lng: -58.40964771739279
   '/users/{userId}/trees/{treeId}':
     parameters:
-      - schema:
-          type: string
-        name: userId
-        in: path
-        required: true
-      - schema:
-          type: string
-        name: treeId
-        in: path
-        required: true
+      - $ref: '#/components/parameters/User-ID'
+      - $ref: '#/components/parameters/Tree-ID'
     get:
       summary: Gets details of a user's tree
       tags:
@@ -548,8 +471,8 @@ paths:
                     specie: Limão Taiti
                     fruitful: true
                     status: accepted
-                    lat: -34.574956
-                    lng: 58.408454
+                    lat: -34.57613278928747
+                    lng: -58.40964771739279
                     owner: true
                     owner_nickname: Alanna
         '401':
@@ -595,8 +518,7 @@ paths:
       tags:
         - Users
       description: This endpoint is intended to be used by a user to delete one of his/her own tree.
-      security:
-        - APIKey: []
+      security: []
 components:
   schemas:
     CreateUser:
@@ -604,7 +526,6 @@ components:
       type: object
       x-examples:
         User-Alanna:
-          id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
           name: Alanna Vanzella
           nickname: Alanna
           email: alanna@example.com
@@ -639,8 +560,8 @@ components:
           specie: Limão Taiti
           fruitful: true
           status: accepted
-          lat: -34.574956
-          lng: 58.408454
+          lat: -34.57613278928747
+          lng: -58.40964771739279
           owner: true
           owner_nickname: Alanna
       description: ''
@@ -726,9 +647,8 @@ components:
           description: Pé de Limão da Alanna
           specie: Limão Taiti
           fruitful: true
-          lat: -34.574956
-          lng: 58.408454
-      description: ''
+          lat: -34.57613278928747
+          lng: -58.40964771739279
       properties:
         description:
           type: string
@@ -783,17 +703,99 @@ components:
               specie: Limão Taiti
               fruitful: true
               status: accepted
-              lat: -34.574956
-              lng: 58.408454
+              lat: -34.57613278928747
+              lng: -58.40964771739279
               owner: true
               owner_nickname: Alanna
-  securitySchemes:
-    APIKey:
-      name: Authorization
-      type: apiKey
-      in: header
+    UpdateUser:
+      title: UpdateUser
+      type: object
+      x-examples:
+        UpdateUser-Alanna:
+          email: alanna@mail.com
+      properties:
+        name:
+          type: string
+          description: User's real full name.
+        nickname:
+          type: string
+          description: User's nickname.
+        email:
+          type: string
+          description: User's email address.
+          format: email
+        password:
+          type: string
+          description: User's password.
+          format: password
+  securitySchemes: {}
+  parameters:
+    Latitude:
+      schema:
+        type: number
+        format: float
+      in: query
+      name: lat
+      description: Latitude
+    Longitude:
+      schema:
+        type: number
+        format: float
+      in: query
+      name: lng
+      description: Longitude
+    Radius:
+      schema:
+        type: number
+        format: float
+        example: 1000
+        minimum: 500
+      in: query
+      name: radius
+      description: 'Max distance in meters from the point(lat, lng)'
+    Status:
+      schema:
+        type: string
+        enum:
+          - accepted
+          - pending
+          - rejected
+        example: accepted
+      in: query
+      name: status
+      description: Tree's status
+    Offset:
+      schema:
+        type: integer
+        format: int32
+        example: 10
+        minimum: 1
+      in: query
+      name: offset
+      description: Pagination offset
+    Limit:
+      schema:
+        type: integer
+        format: int32
+        example: 30
+        minimum: 1
+      in: query
+      name: limit
+      description: Pagination limit
+    User-ID:
+      schema:
+        type: string
+      name: userId
+      in: path
+      required: true
+      description: User's unique identifier
+    Tree-ID:
+      schema:
+        type: string
+      name: treeId
+      in: path
+      required: true
+      description: Tree's unique identifier
 tags:
   - name: Trees
   - name: Users
-security:
-  - APIKey: []
