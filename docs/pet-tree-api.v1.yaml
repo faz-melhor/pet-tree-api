@@ -61,7 +61,7 @@ paths:
       tags:
         - Users
     patch:
-      summary: Updates User's information
+      summary: Updates User information
       operationId: patch-users-userId
       responses:
         '204':
@@ -77,13 +77,14 @@ paths:
               UpdateUser-Alanna:
                 value:
                   email: alanna@mail.com
+        description: A JSON object containing the fields and the information to be updated.
       tags:
         - Users
   '/trees/{treeId}':
     parameters:
       - $ref: '#/components/parameters/Tree-ID'
     get:
-      summary: Gets Tree's details
+      summary: Gets Tree details
       tags:
         - Trees
       responses:
@@ -126,7 +127,7 @@ paths:
       parameters: []
       security: []
     patch:
-      summary: Updates Tree's details
+      summary: Update a specific tree status
       operationId: patch-trees-treeId
       responses:
         '204':
@@ -151,34 +152,27 @@ paths:
                 DB connection error:
                   value:
                     message: Could not establish connection with database.
-      description: Updates details of a specific tree.
+      description: This endpoint can only be used by admins to change a specific tree status.
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                description:
-                  type: string
-                  description: Tree's description
-                specie:
-                  type: string
-                  description: Tree's specie
-                fruitful:
-                  type: boolean
-                  description: The specie is fruitful?
                 status:
                   type: string
                   enum:
                     - accepted
                     - pending
                     - rejected
-                  description: 'Tree''s status, can only be updated by an admin'
+                  description: Tree status
+              required:
+                - status
             examples:
               Aprove tree:
                 value:
                   status: accepted
-        description: A JSON object containing the the fields and the information to be updated.
+        description: A JSON object containing the field 'status' and the new status to be updated.
       parameters: []
       tags:
         - Trees
@@ -310,7 +304,7 @@ paths:
                   nickname: Alanna
                   email: alanna@example.com
                   password: password
-        description: ''
+        description: A JSON object containing the fields and the user information to be created.
       responses:
         '201':
           description: Created
@@ -366,7 +360,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/GetAllTrees'
               examples:
-                Get all Alanna's trees:
+                Get all Alanna trees:
                   value:
                     trees:
                       - id: cd9ef5a6-377e-479f-8efe-f55a5667d7a1
@@ -440,7 +434,7 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateTree'
             examples:
-              Creating Alanna's first tree:
+              Creating Alanna first tree:
                 value:
                   description: Pé de Limão da Alanna
                   specie: Limão Taiti
@@ -448,12 +442,13 @@ paths:
                   status: accepted
                   lat: -34.57613278928747
                   lng: -58.40964771739279
+        description: A JSON object containing the fields and the tree information to be created.
   '/users/{userId}/trees/{treeId}':
     parameters:
       - $ref: '#/components/parameters/User-ID'
       - $ref: '#/components/parameters/Tree-ID'
     get:
-      summary: Gets details of a user's tree
+      summary: Gets details of a user tree
       tags:
         - Users
       responses:
@@ -494,7 +489,7 @@ paths:
       operationId: get-users-userId-trees-treeId
       description: This endpoint is intended to be used by a user to get informations of one of his/her own tree.
     delete:
-      summary: Deletes user's tree
+      summary: Deletes user tree
       operationId: delete-users-userId-trees-treeId
       responses:
         '204':
@@ -519,6 +514,51 @@ paths:
         - Users
       description: This endpoint is intended to be used by a user to delete one of his/her own tree.
       security: []
+    patch:
+      summary: 'Updates user tree details'
+      operationId: patch-users-userId-trees-treeId
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '422':
+          description: Unprocessable Entity
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+              examples:
+                DB connection error:
+                  value:
+                    message: Could not establish connection with database.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  description: Tree description
+                specie:
+                  type: string
+                  description: Tree specie
+                fruitful:
+                  type: boolean
+                  description: The specie is fruitful?
+        description: A JSON object containing the fields and the information to be updated.
+      description: Update details of a user specific tree.
+      tags:
+        - Users
 components:
   schemas:
     CreateUser:
@@ -533,17 +573,17 @@ components:
       properties:
         name:
           type: string
-          description: User's real full name.
+          description: User real full name.
         nickname:
           type: string
-          description: User's nickname.
+          description: User nickname.
         email:
           type: string
-          description: User's email address.
+          description: User email address.
           format: email
         password:
           type: string
-          description: User's password.
+          description: User password.
           format: password
       required:
         - name
@@ -568,38 +608,38 @@ components:
       properties:
         id:
           type: string
-          description: Tree's ID(UUID).
+          description: Tree ID(UUID).
           format: uuid
         description:
           type: string
-          description: 'Tree''s description, also could be the tree''s name given by the owner.'
+          description: 'Tree description, also could be the tree name given by the owner.'
         specie:
           type: string
-          description: Tree's specie.
+          description: Tree specie.
         fruitful:
           type: boolean
           description: The specie is fruitful?
         status:
           type: string
-          description: 'Tree''s status, can be accepted, pending or rejected.'
+          description: 'Tree status, can be accepted, pending or rejected.'
           enum:
             - accepted
             - pending
             - rejected
         lat:
           type: number
-          description: Tree's location latitude.
+          description: Tree location latitude.
           format: float
         lng:
           type: number
-          description: Tree's location longitude.
+          description: Tree location longitude.
           format: float
         owner:
           type: boolean
           description: The user requesting the tree is its owner?
         owner_nickname:
           type: string
-          description: Tree's owners nickname
+          description: Tree owners nickname
       required:
         - id
         - description
@@ -622,17 +662,17 @@ components:
       properties:
         id:
           type: string
-          description: User's ID(UUID).
+          description: User ID(UUID).
           format: uuid
         name:
           type: string
-          description: User's real full name.
+          description: User real full name.
         nickname:
           type: string
-          description: User's nickname.
+          description: User nickname.
         email:
           type: string
-          description: User's email address.
+          description: User email address.
           format: email
       required:
         - id
@@ -652,20 +692,20 @@ components:
       properties:
         description:
           type: string
-          description: 'Tree''s description, also could be the tree''s name given by the owner.'
+          description: 'Tree description, also could be the tree name given by the owner.'
         specie:
           type: string
-          description: Tree's specie.
+          description: Tree specie.
         fruitful:
           type: boolean
           description: The specie is fruitful?
         lat:
           type: number
-          description: Tree's location latitude.
+          description: Tree location latitude.
           format: float
         lng:
           type: number
-          description: Tree's location longitude.
+          description: Tree location longitude.
           format: float
       required:
         - description
@@ -716,17 +756,17 @@ components:
       properties:
         name:
           type: string
-          description: User's real full name.
+          description: User real full name.
         nickname:
           type: string
-          description: User's nickname.
+          description: User nickname.
         email:
           type: string
-          description: User's email address.
+          description: User email address.
           format: email
         password:
           type: string
-          description: User's password.
+          description: User password.
           format: password
   securitySchemes: {}
   parameters:
@@ -763,7 +803,7 @@ components:
         example: accepted
       in: query
       name: status
-      description: Tree's status
+      description: Tree status
     Offset:
       schema:
         type: integer
@@ -788,14 +828,14 @@ components:
       name: userId
       in: path
       required: true
-      description: User's unique identifier
+      description: User unique identifier
     Tree-ID:
       schema:
         type: string
       name: treeId
       in: path
       required: true
-      description: Tree's unique identifier
+      description: Tree unique identifier
 tags:
   - name: Trees
   - name: Users
