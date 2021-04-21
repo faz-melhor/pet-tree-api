@@ -81,13 +81,6 @@ defmodule PetreeApi.TreesTest do
       assert {:error, %Ecto.Changeset{}} = Trees.create_tree(tree |> Map.from_struct())
     end
 
-    test "create_tree/1 with invalid status data returns error changeset" do
-      user = insert(:user)
-      tree = build(:tree, status: :ok, user_id: user.id)
-
-      assert {:error, %Ecto.Changeset{}} = Trees.create_tree(tree |> Map.from_struct())
-    end
-
     test "update_tree/2 with valid description data updates the tree" do
       user = insert(:user)
       tree = insert(:tree, user: user)
