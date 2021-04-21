@@ -22,9 +22,11 @@ defmodule PetreeApi.Trees.Tree do
   @doc false
   def create_changeset(tree, attrs) do
     tree
-    |> cast(attrs, [:description, :specie, :fruitful, :status, :location, :user_id])
-    |> validate_required([:description, :specie, :fruitful, :status, :location, :user_id])
+    |> cast(attrs, [:description, :specie, :fruitful, :location, :user_id])
+    |> validate_required([:description, :specie, :fruitful, :location, :user_id])
+    |> validate_user_id()
     |> validate_location(:location)
+    |> put_change(:status, :pending)
     |> foreign_key_constraint(:user_id)
   end
 
@@ -38,12 +40,20 @@ defmodule PetreeApi.Trees.Tree do
   end
 
   @doc """
-  Validate user id to prevent nil value
+  Validate user id to prevent nil value or invalid UUID
   """
   def validate_user_id(changeset) do
-    case get_field(changeset, :user_id) do
-      nil -> add_error(changeset, :user_id, "can't be blank", validation: :required)
-      _ -> changeset
+    user_id = get_field(changeset, :user_id)
+
+    case user_id do
+      nil ->
+        add_error(changeset, :user_id, "can't be blank", validation: :required)
+
+      _ ->
+        case Ecto.UUID.cast(user_id) do
+          :error -> add_error(changeset, :user_id, "invalid UUID")
+          _ -> changeset
+        end
     end
   end
 

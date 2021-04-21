@@ -67,7 +67,7 @@ defmodule PetreeApiWeb.UserControllerTest do
     test "renders user when name data is valid", %{conn: conn, user: %User{id: id} = user} do
       name = "Janet Smith"
 
-      conn = put(conn, Routes.user_path(conn, :update, user), %{name: name})
+      conn = patch(conn, Routes.user_path(conn, :update, user), %{name: name})
       assert %{"id" => ^id} = json_response(conn, 200)
 
       conn = get(conn, Routes.user_path(conn, :show, id))
@@ -84,7 +84,7 @@ defmodule PetreeApiWeb.UserControllerTest do
     test "renders user when email data is valid", %{conn: conn, user: %User{id: id} = user} do
       email = "emailtest@mail.com"
 
-      conn = put(conn, Routes.user_path(conn, :update, user), %{email: email})
+      conn = patch(conn, Routes.user_path(conn, :update, user), %{email: email})
       assert %{"id" => ^id} = json_response(conn, 200)
 
       conn = get(conn, Routes.user_path(conn, :show, id))
@@ -101,7 +101,7 @@ defmodule PetreeApiWeb.UserControllerTest do
     test "renders user when nickname data is valid", %{conn: conn, user: %User{id: id} = user} do
       nickname = "Janet"
 
-      conn = put(conn, Routes.user_path(conn, :update, user), %{nickname: nickname})
+      conn = patch(conn, Routes.user_path(conn, :update, user), %{nickname: nickname})
       assert %{"id" => ^id} = json_response(conn, 200)
 
       conn = get(conn, Routes.user_path(conn, :show, id))
@@ -118,35 +118,35 @@ defmodule PetreeApiWeb.UserControllerTest do
     test "renders user when password data is valid", %{conn: conn, user: %User{id: id} = user} do
       password = "12345"
 
-      conn = put(conn, Routes.user_path(conn, :update, user), %{password: password})
+      conn = patch(conn, Routes.user_path(conn, :update, user), %{password: password})
       assert %{"id" => ^id} = json_response(conn, 200)
     end
 
     test "renders errors when name data is invalid", %{conn: conn, user: user} do
       name = 1
 
-      conn = put(conn, Routes.user_path(conn, :update, user), %{name: name})
+      conn = patch(conn, Routes.user_path(conn, :update, user), %{name: name})
       assert json_response(conn, 422)["errors"] != %{}
     end
 
     test "renders errors when email data is invalid", %{conn: conn, user: user} do
       email = "email"
 
-      conn = put(conn, Routes.user_path(conn, :update, user), %{email: email})
+      conn = patch(conn, Routes.user_path(conn, :update, user), %{email: email})
       assert json_response(conn, 422)["errors"] != %{}
     end
 
     test "renders errors when nickname data is invalid", %{conn: conn, user: user} do
       nickname = 1
 
-      conn = put(conn, Routes.user_path(conn, :update, user), %{nickname: nickname})
+      conn = patch(conn, Routes.user_path(conn, :update, user), %{nickname: nickname})
       assert json_response(conn, 422)["errors"] != %{}
     end
 
     test "renders errors when password data is invalid", %{conn: conn, user: user} do
       password = 1
 
-      conn = put(conn, Routes.user_path(conn, :update, user), %{password: password})
+      conn = patch(conn, Routes.user_path(conn, :update, user), %{password: password})
       assert json_response(conn, 422)["errors"] != %{}
     end
   end

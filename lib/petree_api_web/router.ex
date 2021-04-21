@@ -8,8 +8,24 @@ defmodule PetreeApiWeb.Router do
   scope "/v1", PetreeApiWeb do
     pipe_through :api
 
-    resources "/trees", TreeController
-    resources "/users", UserController, except: [:new, :edit]
+    get "/trees", TreeController, :index
+
+    get "/trees/:id", TreeController, :show
+    patch "/trees/:id", TreeController, :update
+
+    get "/users", UserController, :index
+    post "/users", UserController, :create
+
+    get "/users/:id", UserController, :show
+    patch "/users/:id", UserController, :update
+    delete "/users/:id", UserController, :delete
+
+    get "/users/:user_id/trees", TreeController, :index
+    post "/users/:user_id/trees", TreeController, :create
+
+    get "/users/:user_id/trees/:tree_id", TreeController, :show
+    patch "/users/:user_id/trees/:tree_id", TreeController, :update
+    delete "/users/:user_id/trees/:tree_id", TreeController, :delete
   end
 
   # Enables LiveDashboard only for development

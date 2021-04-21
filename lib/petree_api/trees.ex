@@ -9,6 +9,19 @@ defmodule PetreeApi.Trees do
   alias PetreeApi.Trees.Tree
 
   @doc """
+  Returns the list of trees of a user.
+
+  ## Examples
+
+      iex> list_trees(user_id)
+      [%Tree{}, ...]
+
+  """
+  def list_trees(user_id) do
+    Repo.all(from t in Tree, where: t.user_id == ^user_id)
+  end
+
+  @doc """
   Returns the list of trees.
 
   ## Examples
@@ -19,6 +32,25 @@ defmodule PetreeApi.Trees do
   """
   def list_trees do
     Repo.all(Tree)
+  end
+
+  @doc """
+  Gets a single tree from a specific user.
+
+  Raises `Ecto.NoResultsError` if the Tree does not exist.
+
+  ## Examples
+
+      iex> get_tree!(123, 456)
+      %Tree{}
+
+      iex> get_tree!(456, 456)
+      ** (Ecto.NoResultsError)
+
+  """
+
+  def get_tree!(tree_id, user_id) do
+    Repo.one!(from t in Tree, where: t.id == ^tree_id and t.user_id == ^user_id)
   end
 
   @doc """

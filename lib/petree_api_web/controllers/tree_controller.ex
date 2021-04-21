@@ -6,6 +6,11 @@ defmodule PetreeApiWeb.TreeController do
 
   action_fallback PetreeApiWeb.FallbackController
 
+  def index(conn, %{"user_id" => user_id}) do
+    trees = Trees.list_trees(user_id)
+    render(conn, "index.json", trees: trees)
+  end
+
   def index(conn, _params) do
     trees = Trees.list_trees()
     render(conn, "index.json", trees: trees)
@@ -14,12 +19,15 @@ defmodule PetreeApiWeb.TreeController do
   def create(conn, params) do
     params = extract_location(params)
 
-    with {:ok, %Tree{} = tree} <- Trees.create_tree(params) do
+    with {:ok, %Tree{}} <- Trees.create_tree(params) do
       conn
-      |> put_status(:created)
-      |> put_resp_header("location", Routes.tree_path(conn, :show, tree))
-      |> render("show.json", tree: tree)
+      |> send_resp(201, "")
     end
+  end
+
+  def show(conn, %{"user_id" => user_id, "tree_id" => tree_id}) do
+    tree = Trees.get_tree!(tree_id, user_id)
+    render(conn, "show.json", tree: tree)
   end
 
   def show(conn, %{"id" => id}) do
@@ -52,8 +60,8 @@ defmodule PetreeApiWeb.TreeController do
     end
   end
 
-  def delete(conn, %{"id" => id}) do
-    tree = Trees.get_tree!(id)
+  def delete(conn, %{"user_id" => user_id, "tree_id" => tree_id}) do
+    tree = Trees.get_tree!(tree_id, user_id)
 
     with {:ok, %Tree{}} <- Trees.delete_tree(tree) do
       send_resp(conn, :no_content, "")
