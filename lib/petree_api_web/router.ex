@@ -3,6 +3,7 @@ defmodule PetreeApiWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :validate_uuid
   end
 
   scope "/v1", PetreeApiWeb do
@@ -11,6 +12,7 @@ defmodule PetreeApiWeb.Router do
     get "/trees", TreeController, :index
 
     get "/trees/:id", TreeController, :show
+
     patch "/trees/:id", TreeController, :update
 
     get "/users", UserController, :index
@@ -20,8 +22,8 @@ defmodule PetreeApiWeb.Router do
     patch "/users/:id", UserController, :update
     delete "/users/:id", UserController, :delete
 
-    get "/users/:user_id/trees", TreeController, :index
-    post "/users/:user_id/trees", TreeController, :create
+    get "/users/:id/trees", TreeController, :index
+    post "/users/:id/trees", TreeController, :create
 
     get "/users/:user_id/trees/:tree_id", TreeController, :show
     patch "/users/:user_id/trees/:tree_id", TreeController, :update
@@ -42,5 +44,27 @@ defmodule PetreeApiWeb.Router do
       pipe_through [:fetch_session, :protect_from_forgery]
       live_dashboard "/dashboard", metrics: PetreeApiWeb.Telemetry
     end
+  end
+
+  defp validate_uuid(
+         %Plug.Conn{path_params: %{"user_id" => user_id, "tree_id" => tree_id}} = conn,
+         _opts
+       ) do
+    if Ecto.UUID.cast(user_id) == :error or Ecto.UUID.cast(tree_id) == :error do
+      conn |> Plug.Conn.send_resp(404, "") |> Plug.Conn.halt()
+    else
+      conn
+    end
+  end
+
+  defp validate_uuid(%Plug.Conn{path_params: %{"id" => id}} = conn, _opts) do
+    case Ecto.UUID.cast(id) do
+      :error -> conn |> Plug.Conn.send_resp(404, "") |> Plug.Conn.halt()
+      _ -> conn
+    end
+  end
+
+  defp validate_uuid(conn, _opts) do
+    conn
   end
 end

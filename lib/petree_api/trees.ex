@@ -6,19 +6,28 @@ defmodule PetreeApi.Trees do
   import Ecto.Query, warn: false
   alias PetreeApi.Repo
 
+  alias PetreeApi.Accounts.User
   alias PetreeApi.Trees.Tree
 
   @doc """
   Returns the list of trees of a user.
 
+  Raises `Ecto.NoResultsError` if the User does not exist.
+
   ## Examples
 
-      iex> list_trees(user_id)
+      iex> list_trees!(user_id)
       [%Tree{}, ...]
 
+      iex> list_trees!(user_id)
+      ** (Ecto.NoResultsError)
+
   """
-  def list_trees(user_id) do
-    Repo.all(from t in Tree, where: t.user_id == ^user_id)
+  def list_trees!(user_id) do
+    User
+    |> Repo.get!(user_id)
+    |> Repo.preload(:trees)
+    |> Map.get(:trees)
   end
 
   @doc """
@@ -31,7 +40,9 @@ defmodule PetreeApi.Trees do
 
   """
   def list_trees do
-    Repo.all(Tree)
+    Tree
+    |> Repo.all()
+    |> Repo.preload(:user)
   end
 
   @doc """
@@ -54,7 +65,7 @@ defmodule PetreeApi.Trees do
   end
 
   @doc """
-  Gets a single tree.
+  Gets a single tree
 
   Raises `Ecto.NoResultsError` if the Tree does not exist.
 
@@ -67,7 +78,7 @@ defmodule PetreeApi.Trees do
       ** (Ecto.NoResultsError)
 
   """
-  def get_tree!(id), do: Repo.get!(Tree, id)
+  def get_tree!(id), do: Tree |> Repo.get!(id) |> Repo.preload(:user)
 
   @doc """
   Creates a tree.
