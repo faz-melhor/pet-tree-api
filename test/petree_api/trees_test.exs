@@ -18,6 +18,20 @@ defmodule PetreeApi.TreesTest do
       assert tree.user_id == Enum.at(trees, 0).user_id
     end
 
+    test "list_trees!/1 return all user trees" do
+      tree = insert(:tree)
+
+      assert trees = Trees.list_trees!(tree.user_id)
+      assert is_list(trees)
+      assert length(trees) == 1
+      assert tree.id == Enum.at(trees, 0).id
+    end
+
+    test "list_trees!/1 with unknown user id returns NoResultsError" do
+      user_id = "eb9cb68d-eaf9-4900-a543-4c8877678be4"
+      assert_raise Ecto.NoResultsError, fn -> Trees.list_trees!(user_id) end
+    end
+
     test "get_tree!/1 returns the tree with given id" do
       %Tree{description: description, id: id} = insert(:tree)
 

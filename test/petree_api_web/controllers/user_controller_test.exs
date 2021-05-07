@@ -25,6 +25,12 @@ defmodule PetreeApiWeb.UserControllerTest do
     end
 
     test "renders errors when name is invalid", %{conn: conn} do
+      user = build(:user, name: 1234, password: "123456")
+      conn = post(conn, Routes.user_path(conn, :create), user |> Map.from_struct())
+      assert json_response(conn, 422)["errors"] == %{"name" => ["is invalid"]}
+    end
+
+    test "renders errors when name is nil", %{conn: conn} do
       user = build(:user, name: nil, password: "123456")
       conn = post(conn, Routes.user_path(conn, :create), user |> Map.from_struct())
       assert json_response(conn, 422)["errors"] == %{"name" => ["can't be blank"]}
@@ -49,15 +55,56 @@ defmodule PetreeApiWeb.UserControllerTest do
     end
 
     test "renders errors when nickname is invalid", %{conn: conn} do
+      user = build(:user, nickname: 12_345, password: "123456")
+      conn = post(conn, Routes.user_path(conn, :create), user |> Map.from_struct())
+      assert json_response(conn, 422)["errors"] == %{"nickname" => ["is invalid"]}
+    end
+
+    test "renders errors when nickname is nil", %{conn: conn} do
       user = build(:user, nickname: nil, password: "123456")
       conn = post(conn, Routes.user_path(conn, :create), user |> Map.from_struct())
       assert json_response(conn, 422)["errors"] == %{"nickname" => ["can't be blank"]}
     end
 
     test "renders errors when password is invalid", %{conn: conn} do
+      user = build(:user, password: 12_345)
+      conn = post(conn, Routes.user_path(conn, :create), user |> Map.from_struct())
+      assert json_response(conn, 422)["errors"] == %{"password" => ["is invalid"]}
+    end
+
+    test "renders errors when password is nil", %{conn: conn} do
       user = build(:user)
       conn = post(conn, Routes.user_path(conn, :create), user |> Map.from_struct())
       assert json_response(conn, 422)["errors"] == %{"password" => ["can't be blank"]}
+    end
+  end
+
+  describe "get user" do
+    setup [:create_user]
+
+    test "renders user data when user exist", %{conn: conn, user: user} do
+      conn = get(conn, Routes.user_path(conn, :show, user.id))
+
+      assert %{
+               "name" => user_name,
+               "nickname" => user_nickname,
+               "email" => user_email
+             } = json_response(conn, 200)
+
+      assert user_name == user.name
+      assert user_nickname == user.nickname
+      assert user_email == user.email
+    end
+
+    test "error when user does not exist", %{conn: conn} do
+      assert_error_sent 404, fn ->
+        get(conn, Routes.user_path(conn, :show, "eb9cb68d-eaf9-4900-a543-4c8877678be4"))
+      end
+    end
+
+    test "error when id is invalid", %{conn: conn} do
+      conn = get(conn, Routes.user_path(conn, :show, "eb9cb68d-eaf9-4900-a543-4c8877678be"))
+      assert response(conn, 404)
     end
   end
 
@@ -68,7 +115,7 @@ defmodule PetreeApiWeb.UserControllerTest do
       name = "Janet Smith"
 
       conn = patch(conn, Routes.user_path(conn, :update, user), %{name: name})
-      assert %{"id" => ^id} = json_response(conn, 200)
+      assert response(conn, 204)
 
       conn = get(conn, Routes.user_path(conn, :show, id))
 
@@ -85,7 +132,7 @@ defmodule PetreeApiWeb.UserControllerTest do
       email = "emailtest@mail.com"
 
       conn = patch(conn, Routes.user_path(conn, :update, user), %{email: email})
-      assert %{"id" => ^id} = json_response(conn, 200)
+      assert response(conn, 204)
 
       conn = get(conn, Routes.user_path(conn, :show, id))
 
@@ -102,7 +149,7 @@ defmodule PetreeApiWeb.UserControllerTest do
       nickname = "Janet"
 
       conn = patch(conn, Routes.user_path(conn, :update, user), %{nickname: nickname})
-      assert %{"id" => ^id} = json_response(conn, 200)
+      assert response(conn, 204)
 
       conn = get(conn, Routes.user_path(conn, :show, id))
 
@@ -115,11 +162,11 @@ defmodule PetreeApiWeb.UserControllerTest do
       assert nickname == updated_nickname
     end
 
-    test "renders user when password data is valid", %{conn: conn, user: %User{id: id} = user} do
+    test "renders user when password data is valid", %{conn: conn, user: user} do
       password = "12345"
 
       conn = patch(conn, Routes.user_path(conn, :update, user), %{password: password})
-      assert %{"id" => ^id} = json_response(conn, 200)
+      assert response(conn, 204)
     end
 
     test "renders errors when name data is invalid", %{conn: conn, user: user} do
@@ -149,6 +196,27 @@ defmodule PetreeApiWeb.UserControllerTest do
       conn = patch(conn, Routes.user_path(conn, :update, user), %{password: password})
       assert json_response(conn, 422)["errors"] != %{}
     end
+
+    test "renders errors when user does not exist", %{conn: conn} do
+      nickname = "testupdate"
+
+      assert_error_sent 404, fn ->
+        patch(conn, Routes.user_path(conn, :update, "eb9cb68d-eaf9-4900-a543-4c8877678be4"), %{
+          nickname: nickname
+        })
+      end
+    end
+
+    test "renders errors when user is invalid", %{conn: conn} do
+      nickname = "testupdate"
+
+      conn =
+        patch(conn, Routes.user_path(conn, :update, "eb9cb68d-eaf9-4900-a543-4c8877678be"), %{
+          nickname: nickname
+        })
+
+      assert response(conn, 404)
+    end
   end
 
   describe "delete user" do
@@ -161,6 +229,17 @@ defmodule PetreeApiWeb.UserControllerTest do
       assert_error_sent 404, fn ->
         get(conn, Routes.user_path(conn, :show, user))
       end
+    end
+
+    test "renders errors when user does not exist", %{conn: conn} do
+      assert_error_sent 404, fn ->
+        delete(conn, Routes.user_path(conn, :delete, "eb9cb68d-eaf9-4900-a543-4c8877678be4"))
+      end
+    end
+
+    test "renders errors when user id is invalid", %{conn: conn} do
+      conn = delete(conn, Routes.user_path(conn, :delete, "eb9cb68d-eaf9-4900-a543-4c8877678be"))
+      assert response(conn, 404)
     end
   end
 

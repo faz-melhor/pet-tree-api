@@ -14,7 +14,7 @@ defmodule PetreeApiWeb.UserController do
   def create(conn, params) do
     with {:ok, %User{}} <- Accounts.create_user(params) do
       conn
-      |> send_resp(201, "")
+      |> send_resp(:created, "")
     end
   end
 
@@ -23,13 +23,11 @@ defmodule PetreeApiWeb.UserController do
     render(conn, "show.json", user: user)
   end
 
-  def update(conn, params) do
-    %{"id" => id} = params
-
+  def update(conn, %{"id" => id} = params) do
     user = Accounts.get_user!(id)
 
-    with {:ok, %User{} = user} <- Accounts.update_user(user, params) do
-      render(conn, "show.json", user: user)
+    with {:ok, %User{}} <- Accounts.update_user(user, params) do
+      send_resp(conn, :no_content, "")
     end
   end
 

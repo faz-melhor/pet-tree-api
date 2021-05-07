@@ -9,10 +9,10 @@ defmodule PetreeApi.Trees.Tree do
 
   schema "trees" do
     field :description, :string
-    field :fruitful, :boolean, default: false
+    field :fruitful, :boolean
     field :location, Geo.PostGIS.Geometry
     field :specie, :string
-    field :status, Ecto.Enum, values: [:pending, :accepted, :rejected]
+    field :status, Ecto.Enum, values: [:pending, :accepted, :rejected], default: :pending
 
     belongs_to :user, User
 
@@ -26,7 +26,6 @@ defmodule PetreeApi.Trees.Tree do
     |> validate_required([:description, :specie, :fruitful, :location, :user_id])
     |> validate_user_id()
     |> validate_location(:location)
-    |> put_change(:status, :pending)
     |> foreign_key_constraint(:user_id)
   end
 
@@ -40,7 +39,7 @@ defmodule PetreeApi.Trees.Tree do
   end
 
   @doc """
-  Validate user id to prevent nil value or invalid UUID
+  Validate user id to prevent nil value
   """
   def validate_user_id(changeset) do
     user_id = get_field(changeset, :user_id)
@@ -50,10 +49,7 @@ defmodule PetreeApi.Trees.Tree do
         add_error(changeset, :user_id, "can't be blank", validation: :required)
 
       _ ->
-        case Ecto.UUID.cast(user_id) do
-          :error -> add_error(changeset, :user_id, "invalid UUID")
-          _ -> changeset
-        end
+        changeset
     end
   end
 
