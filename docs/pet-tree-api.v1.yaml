@@ -96,16 +96,7 @@ paths:
                 $ref: '#/components/schemas/GetTree'
               examples:
                 Pé de Limão da Alanna:
-                  value:
-                    id: cd9ef5a6-377e-479f-8efe-f55a5667d7a1
-                    description: Pé de Limão da Alanna
-                    specie: Limão Taiti
-                    fruitful: true
-                    status: accepted
-                    lat: -34.57613278928747
-                    lng: -58.40964771739279
-                    owner: true
-                    owner_nickname: Alanna
+                  $ref: '#/components/examples/Tree-Example'
         '401':
           description: Unauthorized
         '403':
@@ -209,8 +200,9 @@ paths:
                         status: accepted
                         lat: -34.57613278928747
                         lng: -58.40964771739279
-                        owner: true
-                        owner_nickname: Alanna
+                        owner:
+                          id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+                          nickname: Alanna
           headers:
             X-Total-Count:
               schema:
@@ -358,7 +350,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetAllTrees'
+                $ref: '#/components/schemas/GetAllUserTrees'
               examples:
                 Get all Alanna trees:
                   value:
@@ -370,8 +362,6 @@ paths:
                         status: accepted
                         lat: -34.57613278928747
                         lng: -58.40964771739279
-                        owner: true
-                        owner_nickname: Alanna
           headers:
             X-Total-Count:
               schema:
@@ -457,7 +447,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetTree'
+                $ref: '#/components/schemas/GetUserTree'
               examples:
                 Pé de Limão da Alanna:
                   value:
@@ -468,8 +458,6 @@ paths:
                     status: accepted
                     lat: -34.57613278928747
                     lng: -58.40964771739279
-                    owner: true
-                    owner_nickname: Alanna
         '401':
           description: Unauthorized
         '403':
@@ -515,7 +503,7 @@ paths:
       description: This endpoint is intended to be used by a user to delete one of his/her own tree.
       security: []
     patch:
-      summary: 'Updates user tree details'
+      summary: Updates user tree details
       operationId: patch-users-userId-trees-treeId
       responses:
         '204':
@@ -602,8 +590,9 @@ components:
           status: accepted
           lat: -34.57613278928747
           lng: -58.40964771739279
-          owner: true
-          owner_nickname: Alanna
+          owner:
+            id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+            nickname: Alanna
       description: ''
       properties:
         id:
@@ -635,11 +624,19 @@ components:
           description: Tree location longitude.
           format: float
         owner:
-          type: boolean
-          description: The user requesting the tree is its owner?
-        owner_nickname:
-          type: string
-          description: Tree owners nickname
+          type: object
+          required:
+            - id
+            - nickname
+          description: Owner information
+          properties:
+            id:
+              type: string
+              description: User ID(UUID).
+              format: uuid
+            nickname:
+              type: string
+              description: Tree owner nickname
       required:
         - id
         - description
@@ -649,7 +646,56 @@ components:
         - lat
         - lng
         - owner
-        - owner_nickname
+    GetUserTree:
+      title: Get User Tree
+      type: object
+      x-examples:
+        Pé de Limão da Alanna:
+          id: cd9ef5a6-377e-479f-8efe-f55a5667d7a1
+          description: Pé de Limão da Alanna
+          specie: Limão Taiti
+          fruitful: true
+          status: accepted
+          lat: -34.57613278928747
+          lng: -58.40964771739279
+      description: ''
+      properties:
+        id:
+          type: string
+          description: Tree ID(UUID).
+          format: uuid
+        description:
+          type: string
+          description: 'Tree description, also could be the tree name given by the owner.'
+        specie:
+          type: string
+          description: Tree specie.
+        fruitful:
+          type: boolean
+          description: The specie is fruitful?
+        status:
+          type: string
+          description: 'Tree status, can be accepted, pending or rejected.'
+          enum:
+            - accepted
+            - pending
+            - rejected
+        lat:
+          type: number
+          description: Tree location latitude.
+          format: float
+        lng:
+          type: number
+          description: Tree location longitude.
+          format: float
+      required:
+        - id
+        - description
+        - specie
+        - fruitful
+        - status
+        - lat
+        - lng
     GetUser:
       title: Get User
       type: object
@@ -745,8 +791,27 @@ components:
               status: accepted
               lat: -34.57613278928747
               lng: -58.40964771739279
-              owner: true
-              owner_nickname: Alanna
+              owner:
+                id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+                nickname: Alanna
+    GetAllUserTrees:
+      title: GetAllUserTrees
+      type: object
+      properties:
+        trees:
+          type: array
+          items:
+            $ref: '#/components/schemas/GetUserTree'
+      x-examples:
+        Get all user trees:
+          trees:
+            - id: cd9ef5a6-377e-479f-8efe-f55a5667d7a1
+              description: Pé de Limão da Alanna
+              specie: Limão Taiti
+              fruitful: true
+              status: accepted
+              lat: -34.57613278928747
+              lng: -58.40964771739279
     UpdateUser:
       title: UpdateUser
       type: object
@@ -836,6 +901,20 @@ components:
       in: path
       required: true
       description: Tree unique identifier
+  examples:
+    Tree-Example:
+      summary: Pé de Limão da Alanna
+      value:
+        id: cd9ef5a6-377e-479f-8efe-f55a5667d7a1
+        description: Pé de Limão da Alanna
+        specie: Limão Taiti
+        fruitful: true
+        status: accepted
+        lat: -34.57613278928747
+        lng: -58.40964771739279
+        owner:
+          id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+          nickname: Alanna
 tags:
   - name: Trees
   - name: Users
