@@ -10,9 +10,32 @@ defmodule PetreeApiWeb.UserControllerTest do
   end
 
   describe "index" do
+    setup [:create_users]
+
     test "lists all users", %{conn: conn} do
       conn = get(conn, Routes.user_path(conn, :index))
-      assert json_response(conn, 200)["users"] == []
+      assert is_list(json_response(conn, 200)["users"])
+    end
+
+    test "renders users according to limit filter", %{conn: conn} do
+      query_params = "?limit=2&offset=0"
+      conn = get(conn, Routes.user_path(conn, :index) <> query_params)
+      assert length(json_response(conn, 200)["users"]) == 2
+    end
+
+    test "renders users according to limit and offset filters", %{conn: conn, users: users} do
+      query_params = "?limit=2&offset=2"
+      conn = get(conn, Routes.user_path(conn, :index) <> query_params)
+      user = List.first(json_response(conn, 200)["users"])
+
+      assert Map.get(user, "id") == Enum.at(users, 2).id
+    end
+
+    test "check X-Total-Count header value", %{conn: conn} do
+      query_params = "?limit=2&offset=2"
+      conn = get(conn, Routes.user_path(conn, :index) <> query_params)
+
+      assert List.first(get_resp_header(conn, "X-Total-Count")) == "4"
     end
   end
 
@@ -246,5 +269,10 @@ defmodule PetreeApiWeb.UserControllerTest do
   defp create_user(_) do
     user = insert(:user)
     %{user: user}
+  end
+
+  defp create_users(_) do
+    users = insert_list(4, :user)
+    %{users: users}
   end
 end

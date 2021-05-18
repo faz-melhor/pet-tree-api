@@ -7,8 +7,18 @@ defmodule PetreeApiWeb.UserController do
   action_fallback PetreeApiWeb.FallbackController
 
   def index(conn, _params) do
-    users = Accounts.list_users()
-    render(conn, "index.json", users: users)
+    with {:ok, query, filter_values} <- User.apply_filters(conn),
+         users <- Accounts.list_users(query) do
+      if Map.get(conn.query_params, "limit") != nil do
+        total_count = List.first(Accounts.total_count(query))
+
+        conn
+        |> put_resp_header("X-Total-Count", Integer.to_string(total_count))
+        |> render("index.json", users: users, meta: filter_values)
+      else
+        render(conn, "index.json", users: users, meta: filter_values)
+      end
+    end
   end
 
   def create(conn, params) do

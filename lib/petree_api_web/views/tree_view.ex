@@ -1,5 +1,6 @@
 defmodule PetreeApiWeb.TreeView do
   use PetreeApiWeb, :view
+
   alias PetreeApi.Accounts.User
   alias PetreeApi.Trees.Tree
   alias PetreeApiWeb.TreeView
@@ -13,7 +14,7 @@ defmodule PetreeApiWeb.TreeView do
   end
 
   def render("tree.json", %{tree: %Tree{user: %User{} = user} = tree}) do
-    %Geo.Point{coordinates: {lat, lng}} = tree.location
+    {lat, lng} = tree.location.coordinates
 
     %{
       id: tree.id,
@@ -31,7 +32,7 @@ defmodule PetreeApiWeb.TreeView do
   end
 
   def render("tree.json", %{tree: tree}) do
-    %Geo.Point{coordinates: {lat, lng}} = tree.location
+    {lat, lng} = tree.location.coordinates
 
     %{
       id: tree.id,

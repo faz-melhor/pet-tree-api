@@ -7,13 +7,15 @@ defmodule PetreeApiWeb.TreeController do
   action_fallback PetreeApiWeb.FallbackController
 
   def index(conn, %{"id" => user_id}) do
-    trees = Trees.list_trees!(user_id)
-    render(conn, "index.json", trees: trees)
+    with {:ok, query, filter_values} <- Tree.apply_filters(conn),
+         trees <- Trees.list_trees(query, user_id),
+         do: build_response(conn, query, filter_values, trees)
   end
 
   def index(conn, _params) do
-    trees = Trees.list_trees()
-    render(conn, "index.json", trees: trees)
+    with {:ok, query, filter_values} <- Tree.apply_filters(conn),
+         trees <- Trees.list_trees(query),
+         do: build_response(conn, query, filter_values, trees)
   end
 
   def create(%Plug.Conn{path_params: %{"id" => id}} = conn, params) do
@@ -56,6 +58,26 @@ defmodule PetreeApiWeb.TreeController do
     end
   end
 
+  def delete(conn, %{"user_id" => user_id, "tree_id" => tree_id}) do
+    tree = Trees.get_tree!(tree_id, user_id)
+
+    with {:ok, %Tree{}} <- Trees.delete_tree(tree) do
+      send_resp(conn, :no_content, "")
+    end
+  end
+
+  defp build_response(conn, query, filter_values, trees) do
+    if Map.get(conn.query_params, "limit") != nil do
+      total_count = List.first(Trees.total_count(query))
+
+      conn
+      |> put_resp_header("X-Total-Count", Integer.to_string(total_count))
+      |> render("index.json", trees: trees, meta: filter_values)
+    else
+      render(conn, "index.json", trees: trees, meta: filter_values)
+    end
+  end
+
   defp extract_location(params) do
     if Map.has_key?(params, "lat") and Map.has_key?(params, "lng") do
       %{"lat" => lat, "lng" => lng} = params
@@ -64,14 +86,6 @@ defmodule PetreeApiWeb.TreeController do
     else
       location = %Geo.Point{coordinates: {nil, nil}, srid: 4326}
       Map.put(params, "location", location)
-    end
-  end
-
-  def delete(conn, %{"user_id" => user_id, "tree_id" => tree_id}) do
-    tree = Trees.get_tree!(tree_id, user_id)
-
-    with {:ok, %Tree{}} <- Trees.delete_tree(tree) do
-      send_resp(conn, :no_content, "")
     end
   end
 end

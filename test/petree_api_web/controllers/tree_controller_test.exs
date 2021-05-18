@@ -11,10 +11,11 @@ defmodule PetreeApiWeb.TreeControllerTest do
 
   describe "index" do
     setup [:create_user]
+    setup [:create_trees]
 
     test "lists all trees", %{conn: conn} do
       conn = get(conn, Routes.tree_path(conn, :index))
-      assert json_response(conn, 200)["trees"] == []
+      assert is_list(json_response(conn, 200)["trees"])
     end
 
     test "lists all trees of a user", %{conn: conn, user: user} do
@@ -31,6 +32,271 @@ defmodule PetreeApiWeb.TreeControllerTest do
     test "renders errors when user is invalid", %{conn: conn} do
       conn = get(conn, Routes.tree_path(conn, :index, "eb9cb68d-eaf9-4900-a543-4c8877678be"))
       assert response(conn, 404)
+    end
+
+    test "renders trees according to limit filter", %{conn: conn} do
+      query_params = "?limit=2&offset=0"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+
+      assert length(json_response(conn, 200)["trees"]) == 2
+    end
+
+    test "renders trees according to limit and offset filters", %{conn: conn, trees: trees} do
+      query_params = "?limit=2&offset=2"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+      tree = List.first(json_response(conn, 200)["trees"])
+
+      assert Map.get(tree, "id") == Enum.at(trees, 2).id
+    end
+
+    test "check trees X-Total-Count key header value", %{conn: conn} do
+      query_params = "?limit=2&offset=2"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+
+      assert List.first(get_resp_header(conn, "X-Total-Count")) == "4"
+    end
+
+    test "renders trees with a specific status", %{conn: conn} do
+      query_params = "?status=accepted"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+
+      assert length(json_response(conn, 200)["trees"]) == 2
+    end
+
+    test "renders trees within a specific range (1000m)", %{conn: conn} do
+      query_params = "?lat=-34.582795056619794&lng=-58.40823471344631&radius=1000"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+
+      assert length(json_response(conn, 200)["trees"]) == 4
+    end
+
+    test "renders trees within a specific range (800m)", %{conn: conn} do
+      query_params = "?lat=-34.582795056619794&lng=-58.40823471344631&radius=800"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+
+      assert length(json_response(conn, 200)["trees"]) == 2
+    end
+
+    test "renders error when limit filter is invalid (trees)", %{conn: conn} do
+      query_params = "?limit=asdf&offset=0"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Unable to cast \"asdf\" to integer"
+             }
+    end
+
+    test "renders error when offset filter is invalid (trees)", %{conn: conn} do
+      query_params = "?limit=2&offset=asdf"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Unable to cast \"asdf\" to integer"
+             }
+    end
+
+    test "renders error when status filter is invalid (trees)", %{conn: conn} do
+      query_params = "?status=asdf"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" =>
+                 "Unable to cast \"asdf\" to atom with options: [:accepted, :pending, :rejected]"
+             }
+    end
+
+    test "renders error when lat filter is invalid (trees)", %{conn: conn} do
+      query_params = "?lat=asdf&lng=-58.40823471344631&radius=800"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Unable to cast \"asdf\" to float"
+             }
+    end
+
+    test "renders error when lng filter is invalid (trees)", %{conn: conn} do
+      query_params = "?lat=-34.582795056619794&lng=asdf&radius=800"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Unable to cast \"asdf\" to float"
+             }
+    end
+
+    test "renders error when radius filter is invalid (trees)", %{conn: conn} do
+      query_params = "?lat=-34.582795056619794&lng=-58.40823471344631&radius=asdf"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Unable to cast \"asdf\" to float"
+             }
+    end
+
+    test "renders error when lat filter is missing (trees)", %{conn: conn} do
+      query_params = "?lng=-58.40823471344631&radius=800"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Please, check if lat, lng or radius is missing"
+             }
+    end
+
+    test "renders error when lng filter is missing (trees)", %{conn: conn} do
+      query_params = "?lat=-34.582795056619794&radius=800"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Please, check if lat, lng or radius is missing"
+             }
+    end
+
+    test "renders error when radius filter is missing (trees)", %{conn: conn} do
+      query_params = "?lat=-34.582795056619794&lng=-58.40823471344631"
+      conn = get(conn, Routes.tree_path(conn, :index) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Please, check if lat, lng or radius is missing"
+             }
+    end
+
+    test "renders user trees according to limit filter", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?limit=2&offset=0"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+
+      assert length(json_response(conn, 200)["trees"]) == 2
+    end
+
+    test "renders user trees according to limit and offset filters", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?limit=2&offset=2"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+      tree = List.first(json_response(conn, 200)["trees"])
+
+      assert Map.get(tree, "id") == Enum.at(trees, 2).id
+    end
+
+    test "check user trees X-Total-Count key header value", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?limit=2&offset=2"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+
+      assert List.first(get_resp_header(conn, "X-Total-Count")) == "4"
+    end
+
+    test "renders user trees with a specific status", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?status=accepted"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+
+      assert length(json_response(conn, 200)["trees"]) == 2
+    end
+
+    test "renders user trees within a specific range (1000m)", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?lat=-34.582795056619794&lng=-58.40823471344631&radius=1000"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+
+      assert length(json_response(conn, 200)["trees"]) == 4
+    end
+
+    test "renders user trees within a specific range (800m)", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?lat=-34.582795056619794&lng=-58.40823471344631&radius=800"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+
+      assert length(json_response(conn, 200)["trees"]) == 2
+    end
+
+    test "renders error when limit filter is invalid (user trees)", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?limit=asdf&offset=0"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Unable to cast \"asdf\" to integer"
+             }
+    end
+
+    test "renders error when offset filter is invalid (user trees)", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?limit=2&offset=asdf"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Unable to cast \"asdf\" to integer"
+             }
+    end
+
+    test "renders error when status filter is invalid (user trees)", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?status=asdf"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" =>
+                 "Unable to cast \"asdf\" to atom with options: [:accepted, :pending, :rejected]"
+             }
+    end
+
+    test "renders error when lat filter is invalid (user trees)", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?lat=asdf&lng=-58.40823471344631&radius=800"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Unable to cast \"asdf\" to float"
+             }
+    end
+
+    test "renders error when lng filter is invalid (user trees)", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?lat=-34.582795056619794&lng=asdf&radius=800"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Unable to cast \"asdf\" to float"
+             }
+    end
+
+    test "renders error when radius filter is invalid (user trees)", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?lat=-34.582795056619794&lng=-58.40823471344631&radius=asdf"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Unable to cast \"asdf\" to float"
+             }
+    end
+
+    test "renders error when lat filter is missing (user trees)", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?lng=-58.40823471344631&radius=800"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Please, check if lat, lng or radius is missing"
+             }
+    end
+
+    test "renders error when lng filter is missing (user trees)", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?lat=-34.582795056619794&radius=800"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Please, check if lat, lng or radius is missing"
+             }
+    end
+
+    test "renders error when radius filter is missing (user trees)", %{conn: conn, trees: trees} do
+      user_id = List.first(trees).user_id
+      query_params = "?lat=-34.582795056619794&lng=-58.40823471344631"
+      conn = get(conn, Routes.tree_path(conn, :index, user_id) <> query_params)
+
+      assert json_response(conn, 400)["errors"] == %{
+               "detail" => "Please, check if lat, lng or radius is missing"
+             }
     end
   end
 
@@ -145,7 +411,7 @@ defmodule PetreeApiWeb.TreeControllerTest do
       new_latitude = 343_434
       new_longitude = 343_434
 
-      %Geo.Point{coordinates: {lat, lng}} = tree.location
+      {lat, lng} = tree.location.coordinates
 
       conn =
         patch(conn, Routes.tree_path(conn, :update, tree.id), %{
@@ -663,5 +929,17 @@ defmodule PetreeApiWeb.TreeControllerTest do
   defp create_user(_) do
     user = insert(:user)
     %{user: user}
+  end
+
+  defp create_trees(_) do
+    user = insert(:user)
+    location1 = %Geo.Point{coordinates: {-34.576084203197084, -58.40969063273531}, srid: 4326}
+    location2 = %Geo.Point{coordinates: {-34.58201006934206, -58.40084546048161}, srid: 4326}
+
+    trees =
+      insert_list(2, :tree, user: user, status: :accepted, location: location1) ++
+        insert_list(2, :tree, user: user, location: location2)
+
+    %{trees: trees}
   end
 end

@@ -3,9 +3,16 @@ defmodule PetreeApi.Accounts.User do
   User schema
   """
   use PetreeApi.Schema
+  use Filterable.Phoenix.Model
+
   import Ecto.Changeset
+  import Ecto.Query, warn: false
 
   alias PetreeApi.Trees.Tree
+
+  filterable do
+    limitable()
+  end
 
   schema "users" do
     field :email, :string

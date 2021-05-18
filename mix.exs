@@ -55,7 +55,8 @@ defmodule PetreeApi.MixProject do
       {:excoveralls, "~> 0.10", only: :test},
       {:bcrypt_elixir, "~> 2.0"},
       {:geo, "~> 3.3"},
-      {:geo_postgis, "~> 3.3"}
+      {:geo_postgis, "~> 3.3"},
+      {:filterable, "~> 0.7.4"}
     ]
   end
 
