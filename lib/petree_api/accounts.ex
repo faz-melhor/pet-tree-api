@@ -2,23 +2,29 @@ defmodule PetreeApi.Accounts do
   @moduledoc """
   The Accounts context.
   """
-
   import Ecto.Query, warn: false
-  alias PetreeApi.Repo
 
   alias PetreeApi.Accounts.User
+  alias PetreeApi.Repo
+
+  @doc false
+  def total_count(query) do
+    query
+    |> select([u], fragment("count(?) OVER()", u.id))
+    |> Repo.all()
+  end
 
   @doc """
   Returns the list of users.
 
   ## Examples
 
-      iex> list_users()
+      iex> list_users(query)
       [%User{}, ...]
 
   """
-  def list_users do
-    Repo.all(User)
+  def list_users(query) do
+    Repo.all(query)
   end
 
   @doc """

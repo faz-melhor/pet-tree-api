@@ -11,7 +11,7 @@ defmodule PetreeApi.AccountsTest do
     test "list_users/0 returns all users" do
       user = insert(:user)
 
-      assert users = Accounts.list_users()
+      assert users = Accounts.list_users(User)
       assert users == [user]
       assert length(users) == 1
     end

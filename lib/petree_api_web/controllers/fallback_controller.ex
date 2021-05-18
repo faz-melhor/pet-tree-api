@@ -33,4 +33,11 @@ defmodule PetreeApiWeb.FallbackController do
     |> put_view(PetreeApiWeb.ChangesetView)
     |> render("error.json", changeset: changeset)
   end
+
+  def call(conn, {:error, message}) do
+    conn
+    |> put_status(:bad_request)
+    |> put_view(PetreeApiWeb.ErrorView)
+    |> render("400.json", message: message)
+  end
 end

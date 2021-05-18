@@ -3,9 +3,36 @@ defmodule PetreeApi.Trees.Tree do
   Tree schema
   """
   use PetreeApi.Schema
+  use Filterable.Phoenix.Model
+
   import Ecto.Changeset
+  import Ecto.Query, warn: false
+  import Geo.PostGIS
 
   alias PetreeApi.Accounts.User
+
+  filterable do
+    limitable()
+    field :status, cast: {:atom, [:accepted, :pending, :rejected]}
+
+    @options param: [:lat, :lng, :radius], cast: :float
+    filter location(query, %{lat: lat, lng: lng, radius: radius}, _conn) do
+      cond do
+        is_nil(lat) and is_nil(lng) and is_nil(radius) ->
+          query
+
+        is_nil(lat) or is_nil(lng) or is_nil(radius) ->
+          {:error, "Please, check if lat, lng or radius is missing"}
+
+        true ->
+          query
+          |> where(
+            [q],
+            st_dwithin_in_meters(st_set_srid(st_point(^lat, ^lng), 4326), q.location, ^radius)
+          )
+      end
+    end
+  end
 
   schema "trees" do
     field :description, :string
@@ -58,7 +85,7 @@ defmodule PetreeApi.Trees.Tree do
   """
   def validate_location(changeset, field) do
     validate_change(changeset, field, fn _, value ->
-      %Geo.Point{coordinates: {lat, lng}} = value
+      {lat, lng} = value.coordinates
 
       case is_number(lat) and is_number(lng) do
         true ->

@@ -2,12 +2,18 @@ defmodule PetreeApi.Trees do
   @moduledoc """
   The Trees context.
   """
-
   import Ecto.Query, warn: false
-  alias PetreeApi.Repo
 
   alias PetreeApi.Accounts.User
+  alias PetreeApi.Repo
   alias PetreeApi.Trees.Tree
+
+  @doc false
+  def total_count(query) do
+    query
+    |> select([t], fragment("count(?) OVER()", t.id))
+    |> Repo.all()
+  end
 
   @doc """
   Returns the list of trees of a user.
@@ -16,18 +22,19 @@ defmodule PetreeApi.Trees do
 
   ## Examples
 
-      iex> list_trees!(user_id)
+      iex> list_trees(query, user_id)
       [%Tree{}, ...]
 
-      iex> list_trees!(user_id)
+      iex> list_trees(query, user_id)
       ** (Ecto.NoResultsError)
 
   """
-  def list_trees!(user_id) do
-    User
-    |> Repo.get!(user_id)
-    |> Repo.preload(:trees)
-    |> Map.get(:trees)
+  def list_trees(query, user_id) do
+    with %User{} <- User |> Repo.get!(user_id) do
+      query
+      |> where(user_id: ^user_id)
+      |> Repo.all()
+    end
   end
 
   @doc """
@@ -35,12 +42,12 @@ defmodule PetreeApi.Trees do
 
   ## Examples
 
-      iex> list_trees()
+      iex> list_trees(query)
       [%Tree{}, ...]
 
   """
-  def list_trees do
-    Tree
+  def list_trees(query) do
+    query
     |> Repo.all()
     |> Repo.preload(:user)
   end

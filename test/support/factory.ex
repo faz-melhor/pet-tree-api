@@ -10,8 +10,8 @@ defmodule PetreeApi.Factory do
   def user_factory do
     %User{
       email: sequence(:email, &"email-#{&1}@example.com"),
-      name: "Jane Smith",
-      nickname: "Jane",
+      name: sequence(:name, &"Jane Smith-#{&1}"),
+      nickname: sequence(:nickname, &"Jane-#{&1}"),
       password_hash: Bcrypt.hash_pwd_salt("123456")
     }
   end
