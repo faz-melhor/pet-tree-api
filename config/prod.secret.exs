@@ -24,12 +24,24 @@ secret_key_base =
     You can generate one by calling: mix phx.gen.secret
     """
 
+guardian_secret_key =
+  System.get_env("GUARDIAN_SECRET_KEY") ||
+    raise """
+    environment variable GUARDIAN_SECRET_KEY is missing.
+    You can generate one by calling: mix guardian.gen.secret
+    """
+
 config :petree_api, PetreeApiWeb.Endpoint,
   http: [
     port: String.to_integer(System.get_env("PORT") || "4000"),
     transport_options: [socket_opts: [:inet6]]
   ],
   secret_key_base: secret_key_base
+
+config :petree_api, PetreeApiWeb.Auth.Guardian,
+  issuer: "PetTreeApi",
+  secret_key: guardian_secret_key,
+  ttl: {7, :days}
 
 # ## Using releases (Elixir v1.9+)
 #

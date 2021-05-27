@@ -6,17 +6,26 @@ defmodule PetreeApiWeb.Router do
     plug :validate_uuid
   end
 
+  pipeline :token_authenticated do
+    plug PetreeApiWeb.Auth.Pipeline
+  end
+
   scope "/v1", PetreeApiWeb do
     pipe_through :api
+
+    post "/users", UserController, :create
+    post "/auth", AuthController, :create
+  end
+
+  scope "/v1", PetreeApiWeb do
+    pipe_through [:token_authenticated, :api]
 
     get "/trees", TreeController, :index
 
     get "/trees/:id", TreeController, :show
-
     patch "/trees/:id", TreeController, :update
 
     get "/users", UserController, :index
-    post "/users", UserController, :create
 
     get "/users/:id", UserController, :show
     patch "/users/:id", UserController, :update

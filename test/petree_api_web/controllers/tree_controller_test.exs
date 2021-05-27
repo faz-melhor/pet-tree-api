@@ -2,11 +2,19 @@ defmodule PetreeApiWeb.TreeControllerTest do
   use PetreeApiWeb.ConnCase
 
   import PetreeApi.Factory
+  import PetreeApiWeb.Auth.Guardian
 
   alias PetreeApi.Trees.Tree
 
   setup %{conn: conn} do
-    {:ok, conn: put_req_header(conn, "accept", "application/json")}
+    {:ok, token, _} = encode_and_sign(%{id: "user_id"})
+
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> put_req_header("authorization", "Bearer " <> token)
+
+    {:ok, conn: conn}
   end
 
   describe "index" do
