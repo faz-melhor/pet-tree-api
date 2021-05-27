@@ -48,7 +48,6 @@ paths:
                   value:
                     message: Could not establish connection with database.
       operationId: get-users-userId
-      security: []
       description: Gets details of a specific user.
     delete:
       summary: Deletes User
@@ -57,7 +56,6 @@ paths:
         '204':
           description: No Content
       description: Deletes a specific user.
-      security: []
       tags:
         - Users
     patch:
@@ -66,7 +64,6 @@ paths:
       responses:
         '204':
           description: No Content
-      security: []
       description: Updates information of a specific user.
       requestBody:
         content:
@@ -116,7 +113,6 @@ paths:
       operationId: get-trees-treeId
       description: Gets details of a specific tree.
       parameters: []
-      security: []
     patch:
       summary: Update a specific tree status
       operationId: patch-trees-treeId
@@ -167,7 +163,6 @@ paths:
       parameters: []
       tags:
         - Trees
-      security: []
   /trees:
     get:
       summary: Gets all trees registered
@@ -224,7 +219,6 @@ paths:
                 DB connection error:
                   value:
                     message: Could not establish connection with database.
-      security: []
   /users:
     get:
       summary: Gets all users registered
@@ -274,7 +268,6 @@ paths:
                   value:
                     message: Could not establish connection with database.
       operationId: get-users
-      security: []
       description: Gets all registered users' details.
       parameters:
         - $ref: '#/components/parameters/Limit'
@@ -328,8 +321,8 @@ paths:
                 DB connection error:
                   value:
                     message: Could not establish connection with database.
-      security: []
       description: 'Creates a user, all fields must be specified.'
+      security: []
   '/users/{userId}/trees':
     parameters:
       - $ref: '#/components/parameters/User-ID'
@@ -389,7 +382,6 @@ paths:
                     message: Could not establish connection with database.
       operationId: get-users-userId-trees
       description: 'Gets all trees of a specific user, filters and pagination parameters can be used. Latitude, longitude and radius should be used together, as offset and limit should be used together too.'
-      security: []
     post:
       summary: Creates a tree
       operationId: post-users-userId-trees
@@ -417,7 +409,6 @@ paths:
       tags:
         - Users
       description: A user can use this endpoint to register a tree.
-      security: []
       requestBody:
         content:
           application/json:
@@ -501,7 +492,6 @@ paths:
       tags:
         - Users
       description: This endpoint is intended to be used by a user to delete one of his/her own tree.
-      security: []
     patch:
       summary: Updates user tree details
       operationId: patch-users-userId-trees-treeId
@@ -547,6 +537,69 @@ paths:
       description: Update details of a user specific tree.
       tags:
         - Users
+  /auth:
+    post:
+      summary: Create JWT
+      operationId: post-auth
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: A JWT required to make requests.
+                required:
+                  - token
+              examples:
+                Successfully create token:
+                  value:
+                    token: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJQZXRUcmVlQXBpIiwiZXhwIjoxNjIyNjQ2OTI3LCJpYXQiOjE2MjIwNDIxMjcsImlzcyI6IlBldFRyZWVBcGkiLCJqdGkiOiJlODJmZmE1OC01ZjhhLTQzMjAtYWY3Ny04MTcwMzAwNTUwNjEiLCJuYmYiOjE2MjIwNDIxMjYsInN1YiI6ImJhODM4ZDc1LWIyYmEtNDRiYy1iODA4LTkzY2I1MjdhYmY4OSIsInR5cCI6ImFjY2VzcyJ9.6RmGlUrMLAsXDOqCbneLud4mNCrS2G7JL8QMD8r7NcHu-nye4dJAFZl6U-pgdhwKBZFpc0cuYsKQTlymiPPkVQ
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    properties:
+                      detail:
+                        type: string
+              examples:
+                Invalid email or password:
+                  value:
+                    errors:
+                      detail: You have entered an invalid username or password
+      security: []
+      description: Create a JSON Web Token required to make a request.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: User email.
+                password:
+                  type: string
+                  description: User password.
+              required:
+                - email
+                - password
+            examples:
+              Example Create JWT:
+                value:
+                  email: testmail@email.com
+                  password: '12345'
+        description: User credentials (email and password).
+      tags:
+        - Authentication
 components:
   schemas:
     CreateUser:
@@ -833,7 +886,12 @@ components:
           type: string
           description: User password.
           format: password
-  securitySchemes: {}
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: A JSON Web Token.
   parameters:
     Latitude:
       schema:
@@ -916,5 +974,8 @@ components:
           id: 497f6eca-6276-4993-bfeb-53cbbbba6f08
           nickname: Alanna
 tags:
-  - name: Trees
+  - name: Authentication
   - name: Users
+  - name: Trees
+security:
+  - bearerAuth: []

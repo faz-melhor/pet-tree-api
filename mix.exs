@@ -53,10 +53,11 @@ defmodule PetreeApi.MixProject do
       {:credo, "~> 1.5.0", only: [:dev, :test], runtime: false},
       {:ex_machina, "~> 2.4", only: :test},
       {:excoveralls, "~> 0.10", only: :test},
-      {:bcrypt_elixir, "~> 2.0"},
+      {:bcrypt_elixir, "~> 2.3.0"},
       {:geo, "~> 3.3"},
       {:geo_postgis, "~> 3.3"},
-      {:filterable, "~> 0.7.4"}
+      {:filterable, "~> 0.7.4"},
+      {:guardian, "~> 2.1.1"}
     ]
   end
 

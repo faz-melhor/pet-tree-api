@@ -34,6 +34,12 @@ defmodule PetreeApiWeb.FallbackController do
     |> render("error.json", changeset: changeset)
   end
 
+  def call(conn, {:error, :unauthorized}) do
+    conn
+    |> put_status(:unauthorized)
+    |> json(%{errors: %{detail: "You have entered an invalid username or password"}})
+  end
+
   def call(conn, {:error, message}) do
     conn
     |> put_status(:bad_request)

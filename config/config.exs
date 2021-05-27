@@ -19,6 +19,12 @@ config :petree_api, PetreeApiWeb.Endpoint,
   pubsub_server: PetreeApi.PubSub,
   live_view: [signing_salt: "DfRRCePj"]
 
+# Guardian config
+config :petree_api, PetreeApiWeb.Auth.Guardian,
+  issuer: "PetTreeApi",
+  secret_key: "HQ8tYU1pOmXN2AQYKFD/R+V69rUWN1jOjcmRmm3zsL9930l7CsiF0rHyUkP06Kr",
+  ttl: {7, :days}
+
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
