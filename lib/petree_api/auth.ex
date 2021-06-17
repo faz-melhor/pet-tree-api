@@ -10,7 +10,7 @@ defmodule PetreeApi.Auth do
   def create_token(email, password) do
     case email_password_auth(email, password) do
       {:ok, user} ->
-        Guardian.encode_and_sign(user)
+        Guardian.encode_and_sign(user, %{roles: user.roles})
 
       _ ->
         {:error, :unauthorized}

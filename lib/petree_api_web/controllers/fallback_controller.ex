@@ -37,13 +37,21 @@ defmodule PetreeApiWeb.FallbackController do
   def call(conn, {:error, :unauthorized}) do
     conn
     |> put_status(:unauthorized)
-    |> json(%{errors: %{detail: "You have entered an invalid username or password"}})
+    |> put_view(PetreeApiWeb.ErrorView)
+    |> render("default.json", message: "You have entered an invalid username or password")
+  end
+
+  def call(conn, {:error, :forbidden}) do
+    conn
+    |> put_status(:forbidden)
+    |> put_view(PetreeApiWeb.ErrorView)
+    |> render("default.json", message: "Forbidden")
   end
 
   def call(conn, {:error, message}) do
     conn
     |> put_status(:bad_request)
     |> put_view(PetreeApiWeb.ErrorView)
-    |> render("400.json", message: message)
+    |> render("default.json", message: message)
   end
 end

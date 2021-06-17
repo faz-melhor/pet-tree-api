@@ -6,7 +6,10 @@ defmodule PetreeApi.Trees do
 
   alias PetreeApi.Accounts.User
   alias PetreeApi.Repo
+  alias PetreeApi.Trees.Policy
   alias PetreeApi.Trees.Tree
+
+  defdelegate authorize(action, user, params), to: Policy
 
   @doc false
   def total_count(query) do

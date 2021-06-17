@@ -5,7 +5,7 @@ defmodule PetreeApiWeb.ErrorView do
     %{errors: %{detail: "Internal Server Error"}}
   end
 
-  def render("400.json", %{message: message}) do
+  def render("default.json", %{message: message}) do
     %{errors: %{detail: message}}
   end
 
