@@ -15,7 +15,8 @@ defmodule PetreeApiWeb.UserView do
       id: user.id,
       name: user.name,
       nickname: user.nickname,
-      email: user.email
+      email: user.email,
+      roles: user.roles
     }
   end
 end

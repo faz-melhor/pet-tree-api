@@ -4,8 +4,11 @@ defmodule PetreeApi.Accounts do
   """
   import Ecto.Query, warn: false
 
+  alias PetreeApi.Accounts.Policy
   alias PetreeApi.Accounts.User
   alias PetreeApi.Repo
+
+  defdelegate authorize(action, user, params), to: Policy
 
   @doc false
   def total_count(query) do
@@ -76,6 +79,19 @@ defmodule PetreeApi.Accounts do
   def update_user(%User{} = user, attrs) do
     user
     |> User.update_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Update user privileges.
+
+  ## Examples
+      iex> roles_update(user, roles)
+      {:ok, %User{}}
+  """
+  def roles_update(user, roles) do
+    user
+    |> User.roles_update_changeset(roles)
     |> Repo.update()
   end
 

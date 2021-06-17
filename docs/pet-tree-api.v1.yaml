@@ -31,6 +31,8 @@ paths:
                     name: Alanna Vanzella
                     nickname: Alanna
                     email: alanna@example.com
+                    roles:
+                      - user
         '401':
           description: Unauthorized
         '403':
@@ -244,6 +246,8 @@ paths:
                         name: Alanna Vanzella
                         nickname: Alanna
                         email: alanna@example.com
+                        roles:
+                          - user
           headers:
             X-Total-Count:
               schema:
@@ -758,6 +762,8 @@ components:
           name: Alanna Vanzella
           nickname: Alanna
           email: alanna@example.com
+          roles:
+            - user
       properties:
         id:
           type: string
@@ -773,11 +779,17 @@ components:
           type: string
           description: User email address.
           format: email
+        roles:
+          type: array
+          description: User roles.
+          items:
+            type: string
       required:
         - id
         - name
         - nickname
         - email
+        - roles
     CreateTree:
       title: CreateTree
       type: object
@@ -886,6 +898,11 @@ components:
           type: string
           description: User password.
           format: password
+        roles:
+          type: array
+          description: 'User roles. (Just admins can change user roles, a user must always have a "user" role)'
+          items:
+            type: string
   securitySchemes:
     bearerAuth:
       type: http

@@ -57,7 +57,8 @@ defmodule PetreeApi.MixProject do
       {:geo, "~> 3.3"},
       {:geo_postgis, "~> 3.3"},
       {:filterable, "~> 0.7.4"},
-      {:guardian, "~> 2.1.1"}
+      {:guardian, "~> 2.1.1"},
+      {:bodyguard, "~> 2.4.1"}
     ]
   end
 

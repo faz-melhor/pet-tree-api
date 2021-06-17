@@ -3,6 +3,7 @@ defmodule PetreeApiWeb.TreeController do
 
   alias PetreeApi.Trees
   alias PetreeApi.Trees.Tree
+  alias PetreeApiWeb.Auth.Guardian
 
   action_fallback PetreeApiWeb.FallbackController
 
@@ -19,10 +20,13 @@ defmodule PetreeApiWeb.TreeController do
   end
 
   def create(%Plug.Conn{path_params: %{"id" => id}} = conn, params) do
+    current_user = Guardian.Plug.current_resource(conn)
+
     params = extract_location(params)
     params = Map.put(params, "user_id", id)
 
-    with {:ok, %Tree{}} <- Trees.create_tree(params) do
+    with :ok <- Bodyguard.permit(Trees, :create_tree, id, current_user),
+         {:ok, %Tree{}} <- Trees.create_tree(params) do
       conn
       |> send_resp(:created, "")
     end
@@ -39,29 +43,38 @@ defmodule PetreeApiWeb.TreeController do
   end
 
   def update(conn, %{"user_id" => user_id, "tree_id" => tree_id} = params) do
+    current_user = Guardian.Plug.current_resource(conn)
+
     params = Map.take(params, ["description", "specie", "fruitful"])
 
     tree = Trees.get_tree!(tree_id, user_id)
 
-    with {:ok, %Tree{}} <- Trees.update_tree(tree, params) do
+    with :ok <- Bodyguard.permit(Trees, :update_tree, current_user, tree),
+         {:ok, %Tree{}} <- Trees.update_tree(tree, params) do
       send_resp(conn, :no_content, "")
     end
   end
 
   def update(conn, %{"id" => id} = params) do
+    current_user = Guardian.Plug.current_resource(conn)
+
     params = Map.take(params, ["status"])
 
     tree = Trees.get_tree!(id)
 
-    with {:ok, %Tree{}} <- Trees.update_tree(tree, params) do
+    with :ok <- Bodyguard.permit(Trees, :update_tree_status, current_user),
+         {:ok, %Tree{}} <- Trees.update_tree(tree, params) do
       send_resp(conn, :no_content, "")
     end
   end
 
   def delete(conn, %{"user_id" => user_id, "tree_id" => tree_id}) do
+    current_user = Guardian.Plug.current_resource(conn)
+
     tree = Trees.get_tree!(tree_id, user_id)
 
-    with {:ok, %Tree{}} <- Trees.delete_tree(tree) do
+    with :ok <- Bodyguard.permit(Trees, :delete_tree, current_user, tree),
+         {:ok, %Tree{}} <- Trees.delete_tree(tree) do
       send_resp(conn, :no_content, "")
     end
   end

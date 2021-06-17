@@ -7,7 +7,8 @@ defmodule PetreeApiWeb.UserControllerTest do
   alias PetreeApi.Accounts.User
 
   setup %{conn: conn} do
-    {:ok, token, _} = encode_and_sign(%{id: "user_id"})
+    user = insert(:user, roles: ["user", "admin"])
+    {:ok, token, _} = encode_and_sign(%{id: user.id})
 
     conn =
       conn
@@ -31,19 +32,22 @@ defmodule PetreeApiWeb.UserControllerTest do
       assert length(json_response(conn, 200)["users"]) == 2
     end
 
-    test "renders users according to limit and offset filters", %{conn: conn, users: users} do
+    test "renders users according to limit and offset filters", %{conn: conn} do
       query_params = "?limit=2&offset=2"
       conn = get(conn, Routes.user_path(conn, :index) <> query_params)
       user = List.first(json_response(conn, 200)["users"])
 
-      assert Map.get(user, "id") == Enum.at(users, 2).id
+      conn = get(conn, Routes.user_path(conn, :index))
+      users = json_response(conn, 200)["users"]
+
+      assert Map.get(user, "id") == Map.get(Enum.at(users, 2), "id")
     end
 
     test "check X-Total-Count header value", %{conn: conn} do
       query_params = "?limit=2&offset=2"
       conn = get(conn, Routes.user_path(conn, :index) <> query_params)
 
-      assert List.first(get_resp_header(conn, "X-Total-Count")) == "4"
+      assert List.first(get_resp_header(conn, "X-Total-Count")) == "5"
     end
   end
 
@@ -145,7 +149,13 @@ defmodule PetreeApiWeb.UserControllerTest do
     test "renders user when name data is valid", %{conn: conn, user: %User{id: id} = user} do
       name = "Janet Smith"
 
-      conn = patch(conn, Routes.user_path(conn, :update, user), %{name: name})
+      {:ok, token, _} = encode_and_sign(%{id: id})
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.user_path(conn, :update, user), %{name: name})
+
       assert response(conn, 204)
 
       conn = get(conn, Routes.user_path(conn, :show, id))
@@ -162,7 +172,13 @@ defmodule PetreeApiWeb.UserControllerTest do
     test "renders user when email data is valid", %{conn: conn, user: %User{id: id} = user} do
       email = "emailtest@mail.com"
 
-      conn = patch(conn, Routes.user_path(conn, :update, user), %{email: email})
+      {:ok, token, _} = encode_and_sign(%{id: id})
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.user_path(conn, :update, user), %{email: email})
+
       assert response(conn, 204)
 
       conn = get(conn, Routes.user_path(conn, :show, id))
@@ -179,7 +195,13 @@ defmodule PetreeApiWeb.UserControllerTest do
     test "renders user when nickname data is valid", %{conn: conn, user: %User{id: id} = user} do
       nickname = "Janet"
 
-      conn = patch(conn, Routes.user_path(conn, :update, user), %{nickname: nickname})
+      {:ok, token, _} = encode_and_sign(%{id: id})
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.user_path(conn, :update, user), %{nickname: nickname})
+
       assert response(conn, 204)
 
       conn = get(conn, Routes.user_path(conn, :show, id))
@@ -196,35 +218,65 @@ defmodule PetreeApiWeb.UserControllerTest do
     test "renders user when password data is valid", %{conn: conn, user: user} do
       password = "12345"
 
-      conn = patch(conn, Routes.user_path(conn, :update, user), %{password: password})
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.user_path(conn, :update, user), %{password: password})
+
       assert response(conn, 204)
     end
 
     test "renders errors when name data is invalid", %{conn: conn, user: user} do
       name = 1
 
-      conn = patch(conn, Routes.user_path(conn, :update, user), %{name: name})
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.user_path(conn, :update, user), %{name: name})
+
       assert json_response(conn, 422)["errors"] != %{}
     end
 
     test "renders errors when email data is invalid", %{conn: conn, user: user} do
       email = "email"
 
-      conn = patch(conn, Routes.user_path(conn, :update, user), %{email: email})
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.user_path(conn, :update, user), %{email: email})
+
       assert json_response(conn, 422)["errors"] != %{}
     end
 
     test "renders errors when nickname data is invalid", %{conn: conn, user: user} do
       nickname = 1
 
-      conn = patch(conn, Routes.user_path(conn, :update, user), %{nickname: nickname})
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.user_path(conn, :update, user), %{nickname: nickname})
+
       assert json_response(conn, 422)["errors"] != %{}
     end
 
     test "renders errors when password data is invalid", %{conn: conn, user: user} do
       password = 1
 
-      conn = patch(conn, Routes.user_path(conn, :update, user), %{password: password})
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.user_path(conn, :update, user), %{password: password})
+
       assert json_response(conn, 422)["errors"] != %{}
     end
 
@@ -250,11 +302,65 @@ defmodule PetreeApiWeb.UserControllerTest do
     end
   end
 
+  describe "update user roles" do
+    setup [:create_user]
+
+    test "give admin role to a user", %{conn: conn, user: user} do
+      roles = ["user", "admin"]
+
+      conn = patch(conn, Routes.user_path(conn, :update, user), %{roles: roles})
+      assert response(conn, 204)
+
+      conn = get(conn, Routes.user_path(conn, :show, user.id))
+
+      assert %{"roles" => updated_roles} = json_response(conn, 200)
+      assert roles == updated_roles
+    end
+
+    test "remove admin role from a user", %{conn: conn, user: user} do
+      roles = ["user"]
+
+      conn = patch(conn, Routes.user_path(conn, :update, user), %{roles: roles})
+      assert response(conn, 204)
+
+      conn = get(conn, Routes.user_path(conn, :show, user.id))
+
+      assert %{"roles" => updated_roles} = json_response(conn, 200)
+      assert roles == updated_roles
+    end
+
+    test "cannot remove user role from a user", %{conn: conn, user: user} do
+      roles = ["admin"]
+
+      conn = patch(conn, Routes.user_path(conn, :update, user), %{roles: roles})
+      assert json_response(conn, 422)["errors"] == %{"roles" => ["is invalid"]}
+    end
+
+    test "cannot change roles if user is not an admin", %{conn: conn, user: user} do
+      roles = ["user", "admin"]
+
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.user_path(conn, :update, user), %{roles: roles})
+
+      assert json_response(conn, 403)["errors"] == %{"detail" => "Forbidden"}
+    end
+  end
+
   describe "delete user" do
     setup [:create_user]
 
     test "deletes chosen user", %{conn: conn, user: user} do
-      conn = delete(conn, Routes.user_path(conn, :delete, user))
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> delete(Routes.user_path(conn, :delete, user))
+
       assert response(conn, 204)
 
       assert_error_sent 404, fn ->

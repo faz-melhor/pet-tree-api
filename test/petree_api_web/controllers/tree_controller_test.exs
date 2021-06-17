@@ -7,7 +7,8 @@ defmodule PetreeApiWeb.TreeControllerTest do
   alias PetreeApi.Trees.Tree
 
   setup %{conn: conn} do
-    {:ok, token, _} = encode_and_sign(%{id: "user_id"})
+    user = insert(:user)
+    {:ok, token, _} = encode_and_sign(%{id: user.id})
 
     conn =
       conn
@@ -350,6 +351,7 @@ defmodule PetreeApiWeb.TreeControllerTest do
 
   describe "admin update tree" do
     setup [:create_tree]
+    setup [:create_admin]
 
     test "renders errors when tree does not exist", %{conn: conn} do
       assert_error_sent 404, fn ->
@@ -362,10 +364,15 @@ defmodule PetreeApiWeb.TreeControllerTest do
       assert response(conn, 404)
     end
 
-    test "admin can update tree status", %{conn: conn, tree: tree} do
+    test "admin can update tree status", %{conn: conn, tree: tree, admin: admin} do
       new_status = :accepted
+      {:ok, token, _} = encode_and_sign(%{id: admin.id})
 
-      conn = patch(conn, Routes.tree_path(conn, :update, tree.id), %{status: new_status})
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.tree_path(conn, :update, tree.id), %{status: new_status})
+
       assert response(conn, 204)
 
       conn = get(conn, Routes.tree_path(conn, :show, tree.id))
@@ -385,41 +392,19 @@ defmodule PetreeApiWeb.TreeControllerTest do
       conn =
         patch(conn, Routes.tree_path(conn, :update, tree.id), %{description: new_description})
 
-      assert response(conn, 204)
-
-      conn = get(conn, Routes.tree_path(conn, :show, tree.id))
-
-      assert %{
-               "id" => updated_id,
-               "description" => updated_description
-             } = json_response(conn, 200)
-
-      assert tree.id == updated_id
-      assert tree.description == updated_description
+      assert json_response(conn, 403)["errors"] == %{"detail" => "Forbidden"}
     end
 
     test "admin cannot update tree fruitful data", %{conn: conn, tree: tree} do
       new_fruitful = true
 
       conn = patch(conn, Routes.tree_path(conn, :update, tree.id), %{fruitful: new_fruitful})
-      assert response(conn, 204)
-
-      conn = get(conn, Routes.tree_path(conn, :show, tree.id))
-
-      assert %{
-               "id" => updated_id,
-               "fruitful" => updated_fruitful
-             } = json_response(conn, 200)
-
-      assert tree.id == updated_id
-      assert tree.fruitful == updated_fruitful
+      assert json_response(conn, 403)["errors"] == %{"detail" => "Forbidden"}
     end
 
     test "admin cannot update tree location", %{conn: conn, tree: tree} do
       new_latitude = 343_434
       new_longitude = 343_434
-
-      {lat, lng} = tree.location.coordinates
 
       conn =
         patch(conn, Routes.tree_path(conn, :update, tree.id), %{
@@ -427,36 +412,14 @@ defmodule PetreeApiWeb.TreeControllerTest do
           lng: new_longitude
         })
 
-      assert response(conn, 204)
-
-      conn = get(conn, Routes.tree_path(conn, :show, tree.id))
-
-      assert %{
-               "id" => updated_id,
-               "lat" => updated_latitude,
-               "lng" => updated_longitude
-             } = json_response(conn, 200)
-
-      assert tree.id == updated_id
-      assert lat == updated_latitude
-      assert lng == updated_longitude
+      assert json_response(conn, 403)["errors"] == %{"detail" => "Forbidden"}
     end
 
     test "admin cannot update tree specie", %{conn: conn, tree: tree} do
       new_specie = "New Specie Test"
 
       conn = patch(conn, Routes.tree_path(conn, :update, tree.id), %{specie: new_specie})
-      assert response(conn, 204)
-
-      conn = get(conn, Routes.tree_path(conn, :show, tree.id))
-
-      assert %{
-               "id" => updated_id,
-               "specie" => updated_specie
-             } = json_response(conn, 200)
-
-      assert tree.id == updated_id
-      assert tree.specie == updated_specie
+      assert json_response(conn, 403)["errors"] == %{"detail" => "Forbidden"}
     end
   end
 
@@ -465,9 +428,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
       user = insert(:user)
       tree = build(:tree)
 
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
       conn =
-        post(
-          conn,
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> post(
           Routes.tree_path(conn, :create, user.id),
           tree |> Map.from_struct() |> Map.put("lat", 10) |> Map.put("lng", 10)
         )
@@ -475,39 +441,16 @@ defmodule PetreeApiWeb.TreeControllerTest do
       assert response(conn, 201)
     end
 
-    test "renders error when user does not exist", %{conn: conn} do
-      tree = build(:tree)
-
-      conn =
-        post(
-          conn,
-          Routes.tree_path(conn, :create, "eb9cb68d-eaf9-4900-a543-4c8877678be4"),
-          tree |> Map.from_struct() |> Map.put("lat", 10) |> Map.put("lng", 10)
-        )
-
-      assert response(conn, 404)
-    end
-
-    test "renders errors when user id is invalid", %{conn: conn} do
-      tree = build(:tree)
-
-      conn =
-        post(
-          conn,
-          Routes.tree_path(conn, :create, "eb9cb68d-eaf9-4900-a543-4c8877678be"),
-          tree |> Map.from_struct() |> Map.put("lat", 10) |> Map.put("lng", 10)
-        )
-
-      assert response(conn, 404)
-    end
-
     test "renders errors when description data is invalid", %{conn: conn} do
       user = insert(:user)
       tree = build(:tree, description: 1)
 
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
       conn =
-        post(
-          conn,
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> post(
           Routes.tree_path(conn, :create, user.id),
           tree |> Map.from_struct() |> Map.put("lat", 10) |> Map.put("lng", 10)
         )
@@ -519,9 +462,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
       user = insert(:user)
       tree = build(:tree, description: nil)
 
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
       conn =
-        post(
-          conn,
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> post(
           Routes.tree_path(conn, :create, user.id),
           tree |> Map.from_struct() |> Map.put("lat", 10) |> Map.put("lng", 10)
         )
@@ -533,9 +479,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
       user = insert(:user)
       tree = build(:tree, fruitful: 1)
 
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
       conn =
-        post(
-          conn,
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> post(
           Routes.tree_path(conn, :create, user.id),
           tree |> Map.from_struct() |> Map.put("lat", 10) |> Map.put("lng", 10)
         )
@@ -547,9 +496,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
       user = insert(:user)
       tree = build(:tree, fruitful: nil)
 
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
       conn =
-        post(
-          conn,
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> post(
           Routes.tree_path(conn, :create, user.id),
           tree |> Map.from_struct() |> Map.put("lat", 10) |> Map.put("lng", 10)
         )
@@ -561,9 +513,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
       user = insert(:user)
       tree = build(:tree)
 
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
       conn =
-        post(
-          conn,
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> post(
           Routes.tree_path(conn, :create, user.id),
           tree |> Map.from_struct() |> Map.put("lat", "lat") |> Map.put("lng", 10)
         )
@@ -575,9 +530,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
       user = insert(:user)
       tree = build(:tree)
 
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
       conn =
-        post(
-          conn,
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> post(
           Routes.tree_path(conn, :create, user.id),
           tree |> Map.from_struct() |> Map.put("lng", 10)
         )
@@ -589,9 +547,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
       user = insert(:user)
       tree = build(:tree)
 
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
       conn =
-        post(
-          conn,
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> post(
           Routes.tree_path(conn, :create, user.id),
           tree |> Map.from_struct() |> Map.put("lat", 10) |> Map.put("lng", "lng")
         )
@@ -603,9 +564,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
       user = insert(:user)
       tree = build(:tree)
 
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
       conn =
-        post(
-          conn,
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> post(
           Routes.tree_path(conn, :create, user.id),
           tree |> Map.from_struct() |> Map.put("lat", 10)
         )
@@ -617,9 +581,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
       user = insert(:user)
       tree = build(:tree, specie: 1)
 
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
       conn =
-        post(
-          conn,
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> post(
           Routes.tree_path(conn, :create, user.id),
           tree |> Map.from_struct() |> Map.put("lat", 10) |> Map.put("lng", 10)
         )
@@ -631,9 +598,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
       user = insert(:user)
       tree = build(:tree, specie: nil)
 
+      {:ok, token, _} = encode_and_sign(%{id: user.id})
+
       conn =
-        post(
-          conn,
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> post(
           Routes.tree_path(conn, :create, user.id),
           tree |> Map.from_struct() |> Map.put("lat", 10) |> Map.put("lng", 10)
         )
@@ -765,8 +735,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
     test "renders tree when description data is valid", %{conn: conn, tree: %Tree{id: id} = tree} do
       description = "New Description"
 
+      {:ok, token, _} = encode_and_sign(%{id: tree.user_id})
+
       conn =
-        patch(conn, Routes.tree_path(conn, :update, tree.user_id, id), %{description: description})
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.tree_path(conn, :update, tree.user_id, id), %{description: description})
 
       assert response(conn, 204)
 
@@ -784,7 +758,13 @@ defmodule PetreeApiWeb.TreeControllerTest do
     test "renders tree when fruitful data is valid", %{conn: conn, tree: %Tree{id: id} = tree} do
       fruitful = false
 
-      conn = patch(conn, Routes.tree_path(conn, :update, tree.user_id, id), %{fruitful: fruitful})
+      {:ok, token, _} = encode_and_sign(%{id: tree.user_id})
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.tree_path(conn, :update, tree.user_id, id), %{fruitful: fruitful})
+
       assert response(conn, 204)
 
       conn = get(conn, Routes.tree_path(conn, :show, tree.user_id, id))
@@ -801,7 +781,13 @@ defmodule PetreeApiWeb.TreeControllerTest do
     test "renders tree when specie data is valid", %{conn: conn, tree: %Tree{id: id} = tree} do
       specie = "New Specie"
 
-      conn = patch(conn, Routes.tree_path(conn, :update, tree.user_id, id), %{specie: specie})
+      {:ok, token, _} = encode_and_sign(%{id: tree.user_id})
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.tree_path(conn, :update, tree.user_id, id), %{specie: specie})
+
       assert response(conn, 204)
 
       conn = get(conn, Routes.tree_path(conn, :show, tree.user_id, id))
@@ -818,8 +804,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
     test "renders errors when description data is invalid", %{conn: conn, tree: tree} do
       invalid_description = 1
 
+      {:ok, token, _} = encode_and_sign(%{id: tree.user_id})
+
       conn =
-        patch(conn, Routes.tree_path(conn, :update, tree.user_id, tree.id), %{
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.tree_path(conn, :update, tree.user_id, tree.id), %{
           description: invalid_description
         })
 
@@ -829,8 +819,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
     test "renders errors when fruitful data is invalid", %{conn: conn, tree: tree} do
       invalid_fruitful = 1
 
+      {:ok, token, _} = encode_and_sign(%{id: tree.user_id})
+
       conn =
-        patch(conn, Routes.tree_path(conn, :update, tree.user_id, tree.id), %{
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.tree_path(conn, :update, tree.user_id, tree.id), %{
           fruitful: invalid_fruitful
         })
 
@@ -840,8 +834,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
     test "renders errors when specie data is invalid", %{conn: conn, tree: tree} do
       invalid_specie = 1
 
+      {:ok, token, _} = encode_and_sign(%{id: tree.user_id})
+
       conn =
-        patch(conn, Routes.tree_path(conn, :update, tree.user_id, tree.id), %{
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.tree_path(conn, :update, tree.user_id, tree.id), %{
           specie: invalid_specie
         })
 
@@ -851,8 +849,12 @@ defmodule PetreeApiWeb.TreeControllerTest do
     test "user cant update tree status", %{conn: conn, tree: tree} do
       new_status = :accepted
 
+      {:ok, token, _} = encode_and_sign(%{id: tree.user_id})
+
       conn =
-        patch(conn, Routes.tree_path(conn, :update, tree.user_id, tree.id), %{status: new_status})
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> patch(Routes.tree_path(conn, :update, tree.user_id, tree.id), %{status: new_status})
 
       assert response(conn, 204)
 
@@ -872,7 +874,13 @@ defmodule PetreeApiWeb.TreeControllerTest do
     setup [:create_tree]
 
     test "deletes chosen tree", %{conn: conn, tree: tree} do
-      conn = delete(conn, Routes.tree_path(conn, :delete, tree.user_id, tree.id))
+      {:ok, token, _} = encode_and_sign(%{id: tree.user_id})
+
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> delete(Routes.tree_path(conn, :delete, tree.user_id, tree.id))
+
       assert response(conn, 204)
 
       assert_error_sent 404, fn ->
@@ -937,6 +945,11 @@ defmodule PetreeApiWeb.TreeControllerTest do
   defp create_user(_) do
     user = insert(:user)
     %{user: user}
+  end
+
+  defp create_admin(_) do
+    admin = insert(:user, roles: ["user", "admin"])
+    %{admin: admin}
   end
 
   defp create_trees(_) do
