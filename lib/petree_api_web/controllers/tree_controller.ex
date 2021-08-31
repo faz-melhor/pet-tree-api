@@ -84,7 +84,7 @@ defmodule PetreeApiWeb.TreeController do
       total_count = List.first(Trees.total_count(query))
 
       conn
-      |> put_resp_header("X-Total-Count", Integer.to_string(total_count))
+      |> put_resp_header("X-Total-Count", Integer.to_string(total_count || 0))
       |> render("index.json", trees: trees, meta: filter_values)
     else
       render(conn, "index.json", trees: trees, meta: filter_values)

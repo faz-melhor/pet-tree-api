@@ -48,5 +48,14 @@ defmodule PetreeApiWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
+
+  plug Corsica,
+    max_age: 600,
+    origins: "*",
+    log: [rejected: :error, invalid: :warn, accepted: :debug],
+    allow_headers: ["content-type", "authorization"],
+    allow_credentials: true,
+    expose_headers: ["X-Total-Count"]
+
   plug PetreeApiWeb.Router
 end
