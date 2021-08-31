@@ -17,7 +17,7 @@ defmodule PetreeApiWeb.UserController do
         total_count = List.first(Accounts.total_count(query))
 
         conn
-        |> put_resp_header("X-Total-Count", Integer.to_string(total_count))
+        |> put_resp_header("X-Total-Count", Integer.to_string(total_count || 0))
         |> render("index.json", users: users, meta: filter_values)
       else
         render(conn, "index.json", users: users, meta: filter_values)
